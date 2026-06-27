@@ -1,0 +1,4 @@
+project_id = "matcell-web"
+
+[functions.instagram-sync]
+verify_jwt = false

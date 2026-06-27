@@ -1,0 +1,64 @@
+.cuenta-page {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+.cuenta-page h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.cuenta-email {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 24px;
+}
+
+.cuenta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cuenta-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-negro);
+}
+
+.cuenta-form input {
+  font-family: var(--font-principal);
+  font-size: 14px;
+  padding: 11px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.cuenta-form input:focus {
+  outline: none;
+  border-color: var(--color-naranja);
+}
+
+.cuenta-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.cuenta-guardado {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c7a3e;
+  margin: 0;
+}
+
+@media (max-width: 500px) {
+  .cuenta-form-row {
+    grid-template-columns: 1fr;
+  }
+}

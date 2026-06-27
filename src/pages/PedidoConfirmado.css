@@ -1,0 +1,45 @@
+.pedido-confirmado {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 80px 24px;
+}
+
+.pedido-confirmado-vacio {
+  min-height: 50vh;
+}
+
+.pedido-confirmado-icono {
+  color: #1c7a3e;
+  margin-bottom: 16px;
+}
+
+.pedido-confirmado h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.pedido-confirmado-numero {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 4px;
+}
+
+.pedido-confirmado-numero strong {
+  color: var(--color-negro);
+}
+
+.pedido-confirmado-total {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-naranja);
+  margin: 0 0 20px;
+}
+
+.pedido-confirmado-texto {
+  font-size: 13.5px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}

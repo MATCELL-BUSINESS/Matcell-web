@@ -1,0 +1,28 @@
+.accessory-suggestions {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px 48px;
+}
+
+.accessory-suggestions h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px;
+}
+
+.accessory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 800px) {
+  .accessory-suggestions {
+    padding: 0 20px 40px;
+  }
+
+  .accessory-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}

@@ -1,0 +1,57 @@
+.shipping-progress {
+  background: #fff5f2;
+  border: 1px solid #ffe0d6;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.shipping-progress.desbloqueado {
+  background: #f0fbf4;
+  border-color: #c9ecd6;
+}
+
+.shipping-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.shipping-progress.desbloqueado .shipping-progress-header {
+  color: #1c7a3e;
+}
+
+.shipping-progress-header svg {
+  color: var(--color-naranja);
+  flex-shrink: 0;
+}
+
+.shipping-progress.desbloqueado .shipping-progress-header svg {
+  color: #1c7a3e;
+}
+
+.shipping-progress-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: #f0d9d0;
+  overflow: hidden;
+}
+
+.shipping-progress.desbloqueado .shipping-progress-bar {
+  background: #c9ecd6;
+}
+
+.shipping-progress-fill {
+  height: 100%;
+  background: var(--color-naranja);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.shipping-progress.desbloqueado .shipping-progress-fill {
+  background: #1c7a3e;
+}

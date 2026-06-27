@@ -1,0 +1,57 @@
+.wishlist-prompt-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.5);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.wishlist-prompt {
+  position: relative;
+  background: var(--color-blanco);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.wishlist-prompt-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #999;
+}
+
+.wishlist-prompt-icon {
+  color: var(--color-naranja);
+  margin-bottom: 12px;
+}
+
+.wishlist-prompt h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.wishlist-prompt p {
+  font-size: 13.5px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 22px;
+}
+
+.wishlist-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wishlist-prompt-actions .btn {
+  width: 100%;
+}

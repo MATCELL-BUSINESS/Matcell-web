@@ -1,0 +1,40 @@
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 32px 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  font-size: 13px;
+  color: #888;
+}
+
+.breadcrumbs a {
+  color: #888;
+}
+
+.breadcrumbs a:hover {
+  color: var(--color-naranja);
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.breadcrumbs span {
+  color: var(--color-negro);
+  font-weight: 600;
+}
+
+.breadcrumb-item a {
+  font-weight: 400;
+  color: #888;
+}
+
+@media (max-width: 700px) {
+  .breadcrumbs {
+    padding: 14px 20px 0;
+  }
+}

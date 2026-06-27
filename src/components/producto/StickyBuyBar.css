@@ -1,0 +1,50 @@
+.sticky-buy-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: var(--color-blanco);
+  border-top: 1px solid #eee;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+}
+
+.sticky-buy-info {
+  min-width: 0;
+}
+
+.sticky-buy-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sticky-buy-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-naranja);
+  margin: 2px 0 0;
+}
+
+.sticky-buy-bar .btn {
+  flex-shrink: 0;
+  padding: 11px 22px;
+}
+
+@media (max-width: 700px) {
+  .sticky-buy-bar {
+    padding: 10px 16px;
+  }
+
+  .sticky-buy-name {
+    max-width: 140px;
+  }
+}

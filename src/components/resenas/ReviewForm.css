@@ -1,0 +1,81 @@
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.review-form input,
+.review-form textarea {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.review-form-row {
+  display: flex;
+  gap: 14px;
+}
+
+.review-form-row label {
+  flex: 1;
+}
+
+.review-form-stars p {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin: 0 0 6px;
+}
+
+.review-form-stars-row {
+  display: flex;
+  gap: 4px;
+}
+
+.review-star-btn {
+  background: none;
+  border: none;
+  color: var(--color-naranja);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.review-form-error {
+  font-size: 13px;
+  color: #c62828;
+  margin: 0;
+}
+
+.review-form-exito {
+  background: #f3fbf4;
+  border: 1px solid #d8eedb;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.review-form-exito p {
+  color: #1c7a3e;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+@media (max-width: 500px) {
+  .review-form-row {
+    flex-direction: column;
+  }
+}

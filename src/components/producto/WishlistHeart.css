@@ -1,0 +1,22 @@
+.wishlist-heart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #eee;
+  color: #888;
+  flex-shrink: 0;
+  transition: color 0.2s, transform 0.15s;
+}
+
+.wishlist-heart:hover {
+  transform: scale(1.08);
+}
+
+.wishlist-heart.active {
+  color: var(--color-naranja);
+  border-color: var(--color-naranja);
+}
