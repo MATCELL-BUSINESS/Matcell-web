@@ -47,6 +47,7 @@ export default function ProductoDetalle() {
   const [producto, setProducto] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [capacidadSeleccionada, setCapacidadSeleccionada] = useState(null)
+  const [compatibilidadSeleccionada, setCompatibilidadSeleccionada] = useState(null)
   const [colorSeleccionado, setColorSeleccionado] = useState(null)
   const [envio, setEnvio] = useState(null)
   const [accesorios, setAccesorios] = useState([])
@@ -62,17 +63,25 @@ export default function ProductoDetalle() {
         setProducto(data)
 
         const variantes = data?.producto_variantes ?? []
+        const esAccesorioInit = data?.categorias?.slug === 'accesorios'
         if (variantes.length > 0) {
-          const capacidades = [
-            ...new Set(variantes.map((v) => v.almacenamiento).filter(Boolean)),
-          ]
-          const capacidadInicial = capacidades.length > 1 ? capacidades[0] : null
-          setCapacidadSeleccionada(capacidadInicial)
-
-          const coloresInicial = capacidadInicial
-            ? variantes.filter((v) => v.almacenamiento === capacidadInicial)
-            : variantes
-          setColorSeleccionado(coloresInicial[0]?.color ?? null)
+          if (esAccesorioInit) {
+            const compats = [...new Set(variantes.map((v) => v.modelo_compatible).filter(Boolean))]
+            const compatInicial = compats[0] ?? null
+            setCompatibilidadSeleccionada(compatInicial)
+            const coloresInicial = compatInicial
+              ? variantes.filter((v) => v.modelo_compatible === compatInicial)
+              : variantes
+            setColorSeleccionado(coloresInicial[0]?.color ?? null)
+          } else {
+            const capacidades = [...new Set(variantes.map((v) => v.almacenamiento).filter(Boolean))]
+            const capacidadInicial = capacidades.length > 1 ? capacidades[0] : null
+            setCapacidadSeleccionada(capacidadInicial)
+            const coloresInicial = capacidadInicial
+              ? variantes.filter((v) => v.almacenamiento === capacidadInicial)
+              : variantes
+            setColorSeleccionado(coloresInicial[0]?.color ?? null)
+          }
         }
 
         if (data) {
@@ -103,16 +112,35 @@ export default function ProductoDetalle() {
   }
 
   const variantes = producto.producto_variantes ?? []
-  const capacidades = [...new Set(variantes.map((v) => v.almacenamiento).filter(Boolean))]
+  const esAccesorio = producto.categorias?.slug === 'accesorios'
+
+  const compatibilidades = esAccesorio
+    ? [...new Set(variantes.map((v) => v.modelo_compatible).filter(Boolean))]
+    : []
+  const tieneCompatibilidades = compatibilidades.length > 1
+
+  const capacidades = !esAccesorio
+    ? [...new Set(variantes.map((v) => v.almacenamiento).filter(Boolean))]
+    : []
   const tieneCapacidades = capacidades.length > 1
-  const coloresDisponibles = tieneCapacidades
-    ? variantes.filter((v) => v.almacenamiento === capacidadSeleccionada)
-    : variantes
-  const varianteActiva = variantes.find(
-    (v) =>
-      (!tieneCapacidades || v.almacenamiento === capacidadSeleccionada) &&
-      v.color === colorSeleccionado
-  )
+
+  const coloresDisponibles = esAccesorio
+    ? (compatibilidadSeleccionada
+        ? variantes.filter((v) => v.modelo_compatible === compatibilidadSeleccionada)
+        : variantes)
+    : (tieneCapacidades
+        ? variantes.filter((v) => v.almacenamiento === capacidadSeleccionada)
+        : variantes)
+
+  const varianteActiva = variantes.find((v) => {
+    if (esAccesorio) {
+      return (!compatibilidadSeleccionada || v.modelo_compatible === compatibilidadSeleccionada)
+        && v.color === colorSeleccionado
+    }
+    return (!tieneCapacidades || v.almacenamiento === capacidadSeleccionada)
+      && v.color === colorSeleccionado
+  })
+
   const stockMostrado = varianteActiva ? varianteActiva.stock : producto.stock
   const precioMostrado = varianteActiva?.precio ?? producto.precio
   const stockBajo = stockMostrado > 0 && stockMostrado <= STOCK_BAJO_UMBRAL
@@ -123,7 +151,7 @@ export default function ProductoDetalle() {
     fotosColor.length > 0 ? fotosColor : (producto.fotos ?? []).filter((f) => !f.color)
 
   const specsDisponibles = SPECS_LABELS.filter(
-    ([key]) => producto[key] && !(key === 'almacenamiento' && tieneCapacidades)
+    ([key]) => producto[key] && !(key === 'almacenamiento' && (tieneCapacidades || esAccesorio))
   )
 
   const mensajeSimple = `Hola, tengo dudas sobre el ${producto.nombre}. ¿Me pueden ayudar?`
@@ -135,7 +163,15 @@ export default function ProductoDetalle() {
     setColorSeleccionado(colores[0]?.color ?? null)
   }
 
-  const varianteLabel = [capacidadSeleccionada, colorSeleccionado].filter(Boolean).join(' - ')
+  const handleSeleccionarCompatibilidad = (compat) => {
+    setCompatibilidadSeleccionada(compat)
+    const colores = variantes.filter((v) => v.modelo_compatible === compat)
+    setColorSeleccionado(colores[0]?.color ?? null)
+  }
+
+  const varianteLabel = esAccesorio
+    ? [compatibilidadSeleccionada ? `Compatible con ${compatibilidadSeleccionada}` : null, colorSeleccionado].filter(Boolean).join(' · ')
+    : [capacidadSeleccionada, colorSeleccionado].filter(Boolean).join(' - ')
 
   const handleAgregarAlCarrito = () => {
     if (agotado) return
@@ -209,7 +245,24 @@ export default function ProductoDetalle() {
             </p>
           )}
 
-          {tieneCapacidades && (
+          {esAccesorio && tieneCompatibilidades && (
+            <div className="producto-variantes">
+              <p className="variantes-label">Compatible con</p>
+              <div className="variantes-options">
+                {compatibilidades.map((compat) => (
+                  <button
+                    key={compat}
+                    className={`variante-chip ${compat === compatibilidadSeleccionada ? 'active' : ''}`}
+                    onClick={() => handleSeleccionarCompatibilidad(compat)}
+                  >
+                    {compat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!esAccesorio && tieneCapacidades && (
             <div className="producto-variantes">
               <p className="variantes-label">Capacidad</p>
               <div className="variantes-options">
@@ -285,10 +338,12 @@ export default function ProductoDetalle() {
             </table>
           )}
 
-          <div className="producto-faq">
-            <p className="producto-faq-pregunta">{faqTitulo}</p>
-            <p className="producto-faq-respuesta">{faqRespuesta}</p>
-          </div>
+          {!esAccesorio && (
+            <div className="producto-faq">
+              <p className="producto-faq-pregunta">{faqTitulo}</p>
+              <p className="producto-faq-respuesta">{faqRespuesta}</p>
+            </div>
+          )}
 
           <div className="producto-ctas">
             <button
