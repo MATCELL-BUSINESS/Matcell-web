@@ -372,7 +372,7 @@ export default function ProductoDetalle() {
               Comprar ahora
             </button>
 
-            <
+            <a
               href={whatsappSimpleHref}
               target="_blank"
               rel="noopener noreferrer"
