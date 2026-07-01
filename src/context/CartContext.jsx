@@ -48,6 +48,31 @@ export function CartProvider({ children }) {
     setDrawerOpen(true)
   }
 
+  const addItemSilent = (nuevoItem) => {
+    setItems((actuales) => {
+      const existente = actuales.find(
+        (item) => item.productoId === nuevoItem.productoId && item.color === nuevoItem.color
+      )
+      if (existente) {
+        const cantidadDeseada = existente.cantidad + (nuevoItem.cantidad ?? 1)
+        const tope = existente.stockDisponible ?? Infinity
+        return actuales.map((item) =>
+          item.cartItemId === existente.cartItemId
+            ? { ...item, cantidad: Math.min(cantidadDeseada, tope) }
+            : item
+        )
+      }
+      return [
+        ...actuales,
+        {
+          cartItemId: `${nuevoItem.productoId}-${nuevoItem.color ?? 'sin-color'}-${Date.now()}`,
+          cantidad: 1,
+          ...nuevoItem,
+        },
+      ]
+    })
+  }
+
   const removeItem = (cartItemId) => {
     setItems((actuales) => actuales.filter((item) => item.cartItemId !== cartItemId))
   }
@@ -78,6 +103,7 @@ export function CartProvider({ children }) {
   const value = {
     items,
     addItem,
+    addItemSilent,
     removeItem,
     updateCantidad,
     clearCart,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import {
   FiShield,
@@ -41,8 +41,9 @@ const SPECS_LABELS = [
 
 export default function ProductoDetalle() {
   const { id } = useParams()
-  const { addItem } = useCart()
+  const { addItem, addItemSilent } = useCart()
   const { whatsapp } = useTiendaConfig()
+  const navigate = useNavigate()
 
   const [producto, setProducto] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -173,16 +174,24 @@ export default function ProductoDetalle() {
     ? [compatibilidadSeleccionada ? `Compatible con ${compatibilidadSeleccionada}` : null, colorSeleccionado].filter(Boolean).join(' · ')
     : [capacidadSeleccionada, colorSeleccionado].filter(Boolean).join(' - ')
 
+  const itemParaCarrito = {
+    productoId: producto.id,
+    nombre: producto.nombre,
+    foto: fotosGaleria?.[0]?.url ?? producto.fotos?.[0]?.url ?? null,
+    precio: precioMostrado,
+    color: varianteLabel || null,
+    stockDisponible: null,
+  }
+
   const handleAgregarAlCarrito = () => {
     if (agotado) return
-    addItem({
-      productoId: producto.id,
-      nombre: producto.nombre,
-      foto: fotosGaleria?.[0]?.url ?? producto.fotos?.[0]?.url ?? null,
-      precio: precioMostrado,
-      color: varianteLabel || null,
-      stockDisponible: null,
-    })
+    addItem(itemParaCarrito)
+  }
+
+  const handleComprarAhora = () => {
+    if (agotado) return
+    addItemSilent(itemParaCarrito)
+    navigate('/checkout')
   }
 
   const categoria = producto.categorias
@@ -355,7 +364,15 @@ export default function ProductoDetalle() {
               {agotado ? 'Agotado' : 'Agregar al carrito'}
             </button>
 
-            <a
+            <button
+              className="btn btn-secondary producto-cta"
+              onClick={handleComprarAhora}
+              disabled={agotado}
+            >
+              Comprar ahora
+            </button>
+
+            <
               href={whatsappSimpleHref}
               target="_blank"
               rel="noopener noreferrer"
