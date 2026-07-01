@@ -32,7 +32,7 @@ export default function CartDrawer() {
       foto: producto.foto_portada,
       precio: producto.precio,
       color: null,
-      stockDisponible: producto.stock,
+      stockDisponible: null,
     })
   }
 
