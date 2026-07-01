@@ -145,7 +145,7 @@ export default function ProductoDetalle() {
       foto: fotosGaleria?.[0]?.url ?? producto.fotos?.[0]?.url ?? null,
       precio: precioMostrado,
       color: varianteLabel || null,
-      stockDisponible: stockMostrado,
+      stockDisponible: null,
     })
   }
 
