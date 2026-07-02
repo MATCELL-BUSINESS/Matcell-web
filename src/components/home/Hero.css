@@ -14,7 +14,7 @@
 
 .hero-overlay {
   position: absolute;
-  bottom: 28%;
+  bottom: 8%;
   left: 4%;
   width: auto;
   display: flex;
@@ -48,11 +48,11 @@
   }
 
   .hero-overlay {
-    top: 52%;
-    bottom: auto;
-    left: 0;
-    width: 100%;
-    justify-content: center;
+    top: auto;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
   }
 
   .hero-cta-btn {
