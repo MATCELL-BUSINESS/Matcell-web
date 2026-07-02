@@ -260,6 +260,18 @@
   width: 100%;
 }
 
+.producto-cta-comprar {
+  background: #fff;
+  border: 2px solid #FF2D00;
+  color: #FF2D00;
+  font-weight: 600;
+}
+
+.producto-cta-comprar:hover:not(:disabled) {
+  background: #FF2D00;
+  color: #fff;
+}
+
 .producto-pago-seguro {
   display: flex;
   gap: 10px;

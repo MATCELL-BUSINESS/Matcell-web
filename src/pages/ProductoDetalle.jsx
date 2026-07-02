@@ -365,7 +365,7 @@ export default function ProductoDetalle() {
             </button>
 
             <button
-              className="btn btn-secondary producto-cta"
+              className="btn producto-cta producto-cta-comprar"
               onClick={handleComprarAhora}
               disabled={agotado}
             >
