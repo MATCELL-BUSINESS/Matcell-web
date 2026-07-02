@@ -1,46 +1,25 @@
 import { Link } from 'react-router-dom'
-import { FiShield, FiTruck, FiRefreshCw, FiAward } from 'react-icons/fi'
 import './Hero.css'
 
-const TRUST_ITEMS = [
-  { icon: FiShield, label: 'Garantía hasta 12 meses' },
-  { icon: FiTruck, label: 'Envío a toda Colombia' },
-  { icon: FiRefreshCw, label: '30 días para cambios' },
-  { icon: FiAward, label: 'Certificación por técnicos' },
-]
+const HERO_DESKTOP = 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero-desktop.jpg.jpeg'
+const HERO_MOBILE = 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero-mobile.jpg.jpeg'
 
 export default function Hero() {
   return (
     <section className="hero">
-      <div className="hero-content">
-        <span className="hero-badge">100% certificado</span>
-        <h1>
-          iPhone certificado. Mitad de precio.
-          <br />
-          Misma experiencia.
-        </h1>
-        <p className="hero-subtext">
-          Más de 1.200 clientes en Colombia ya compraron con nosotros y
-          renovaron su iPhone sin pagar precio de nuevo.
-        </p>
+      <picture>
+        <source media="(max-width: 767px)" srcSet={HERO_MOBILE} />
+        <img
+          src={HERO_DESKTOP}
+          alt="iPhone certificado — Mitad de precio, misma experiencia"
+          className="hero-img"
+        />
+      </picture>
 
-        <div className="hero-cta">
-          <Link to="/categoria/iphone" className="btn btn-primary">
-            Ver catálogo
-          </Link>
-          <Link to="/como-certificamos" className="btn btn-secondary">
-            Cómo certificamos
-          </Link>
-        </div>
-
-        <ul className="trust-bar">
-          {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-            <li key={label}>
-              <Icon size={18} />
-              <span>{label}</span>
-            </li>
-          ))}
-        </ul>
+      <div className="hero-overlay">
+        <Link to="/catalogo?categoria=iphone" className="hero-cta-btn">
+          Ver iPhones →
+        </Link>
       </div>
     </section>
   )
