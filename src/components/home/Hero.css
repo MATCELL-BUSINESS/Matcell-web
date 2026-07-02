@@ -6,9 +6,10 @@
 
 .hero-img {
   width: 100%;
-  height: auto;
+  height: 90vh;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center top;
 }
 
 .hero-overlay {
@@ -41,8 +42,14 @@
 }
 
 @media (max-width: 767px) {
+  .hero-img {
+    height: auto;
+    object-fit: contain;
+  }
+
   .hero-overlay {
-    bottom: 8%;
+    top: 87%;
+    bottom: auto;
     left: 0;
     width: 100%;
   }
