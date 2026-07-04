@@ -83,8 +83,9 @@
 /* ── Móvil ─────────────────────────────────────── */
 @media (max-width: 767px) {
   .hero-img {
-    height: auto;
-    object-fit: contain;
+    height: 90vh;
+    object-fit: cover;
+    object-position: center top;
   }
 
   .hero-overlay {

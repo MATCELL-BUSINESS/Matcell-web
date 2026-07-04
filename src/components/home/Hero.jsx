@@ -7,14 +7,14 @@ const BANNERS = [
     desktop: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero-desktop.jpg.jpeg',
     mobile: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero-mobile.jpg.jpeg',
     boton: 'Ver iPhones →',
-    href: '/catalogo?categoria=iphone',
+    href: '/catalogo/iphone',
     alt: 'iPhone certificado — Mitad de precio, misma experiencia',
   },
   {
     desktop: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero%20accesorios%20pc.png',
     mobile: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/hero%20accesorios%20movil.png',
     boton: 'Ver accesorios →',
-    href: '/catalogo?categoria=accesorios',
+    href: '/catalogo/accesorios',
     alt: 'Accesorios para iPhone — Forros, cables y más',
   },
 ]
