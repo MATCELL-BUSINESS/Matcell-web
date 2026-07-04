@@ -6,6 +6,7 @@ import {
   getInstagramPosts,
 } from '../lib/api'
 import Hero from '../components/home/Hero'
+import VideoSection from '../components/home/VideoSection'
 import QuickCategories from '../components/home/QuickCategories'
 import BestSellers from '../components/home/BestSellers'
 import HowWeCertify from '../components/home/HowWeCertify'
@@ -31,6 +32,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <VideoSection />
       <QuickCategories categorias={categorias} />
       <BestSellers productos={productos} />
       <HowWeCertify />
