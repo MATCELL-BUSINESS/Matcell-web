@@ -9,7 +9,7 @@ const VIDEOS = [
 export default function VideoSection() {
   return (
     <section className="video-section">
-      <h2 className="video-section-titulo">MatCell en acción</h2>
+      <h2 className="video-section-titulo">🎬 Míranos antes de comprar 👇</h2>
       <div className="video-grid">
         {VIDEOS.map((v) => (
           <div key={v.id} className="video-wrapper">
