@@ -1,7 +1,21 @@
+/* ── Carrusel hero ─────────────────────────────── */
 .hero {
   position: relative;
   width: 100%;
+  overflow: hidden;
   line-height: 0;
+}
+
+.hero-track {
+  display: flex;
+  transition: transform 0.5s ease;
+  will-change: transform;
+}
+
+.hero-slide {
+  position: relative;
+  min-width: 100%;
+  flex-shrink: 0;
 }
 
 .hero-img {
@@ -16,9 +30,7 @@
   position: absolute;
   bottom: 8%;
   left: 4%;
-  width: auto;
   display: flex;
-  justify-content: flex-start;
   align-items: center;
 }
 
@@ -41,6 +53,34 @@
   background: #cc2400;
 }
 
+/* ── Dots ──────────────────────────────────────── */
+.hero-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.hero-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.hero-dot.active {
+  background: #FF2D00;
+  transform: scale(1.3);
+}
+
+/* ── Móvil ─────────────────────────────────────── */
 @media (max-width: 767px) {
   .hero-img {
     height: auto;
@@ -48,20 +88,22 @@
   }
 
   .hero-overlay {
-    top: auto;
     bottom: 5%;
     left: 50%;
     transform: translateX(-50%);
-    width: auto;
   }
 
   .hero-cta-btn {
     font-size: 14px;
     padding: 12px 24px;
   }
+
+  .hero-dots {
+    bottom: 10px;
+  }
 }
 
-/* Global button styles — kept here since Hero.css is loaded globally */
+/* ── Estilos globales de botón (usados en toda la app) ── */
 .btn {
   display: inline-flex;
   align-items: center;
