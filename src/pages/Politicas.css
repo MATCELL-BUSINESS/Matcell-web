@@ -1,0 +1,435 @@
+/* ── Página completa ──────────────────────────────── */
+.politicas-page {
+  min-height: 100vh;
+  background: #f8f8f8;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.pol-header {
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 64px 24px 48px;
+}
+
+.pol-header h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.pol-header p {
+  font-size: 1.05rem;
+  color: #aaa;
+  margin: 0;
+}
+
+/* ── Tabs móvil (ocultos en desktop) ─────────────── */
+.pol-tabs {
+  display: none;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.pol-tabs::-webkit-scrollbar { display: none; }
+
+.pol-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.pol-tab.active {
+  border-color: #FF2D00;
+  color: #FF2D00;
+  background: #fff4f2;
+}
+
+/* ── Layout sidebar + contenido ─────────────────── */
+.pol-layout {
+  display: flex;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* ── Sidebar desktop ─────────────────────────────── */
+.pol-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+}
+
+.pol-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.pol-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pol-nav-item:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.pol-nav-item.active {
+  background: #fff4f2;
+  color: #FF2D00;
+  font-weight: 700;
+}
+
+.pol-nav-icono {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* ── Contenido principal ─────────────────────────── */
+.pol-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Sección ─────────────────────────────────────── */
+.pol-seccion {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  scroll-margin-top: 90px;
+}
+
+.pol-seccion h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 16px;
+}
+
+.pol-intro {
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.pol-subtitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #222;
+  margin: 28px 0 12px;
+}
+
+/* ── Cards en fila ───────────────────────────────── */
+.pol-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.pol-card-garantia {
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.pol-card-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.pol-card-garantia h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 8px;
+}
+
+.pol-card-garantia p {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Lista ───────────────────────────────────────── */
+.pol-list {
+  padding: 0;
+  margin: 0 0 16px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pol-list li {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+/* ── Steps ───────────────────────────────────────── */
+.pol-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pol-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.pol-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FF2D00;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Card alerta (naranja) ───────────────────────── */
+.pol-card-warning {
+  background: #fff4f2;
+  border-left: 4px solid #FF2D00;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.pol-card-warning h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #c0210a;
+  margin: 0 0 12px;
+}
+
+.pol-card-alert {
+  background: #fffbe6;
+  border-left: 4px solid #e6a817;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: #7a5500;
+  margin: 20px 0;
+  line-height: 1.5;
+}
+
+.pol-card-green {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  color: #166534;
+  margin: 20px 0;
+  line-height: 1.5;
+}
+
+.pol-card-blue {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 20px 24px;
+  font-size: 0.95rem;
+  color: #1e40af;
+  margin: 20px 0;
+  line-height: 1.5;
+}
+
+/* ── Bloque texto ────────────────────────────────── */
+.pol-bloque {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pol-bloque:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pol-bloque h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0 0 12px;
+}
+
+/* ── Tabla ───────────────────────────────────────── */
+.pol-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.pol-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.pol-table th {
+  background: #f0f0f0;
+  font-weight: 700;
+  color: #222;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.pol-table td {
+  padding: 12px 16px;
+  color: #444;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.pol-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Contacto final ──────────────────────────────── */
+.pol-contacto {
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.pol-contacto h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.pol-contacto p {
+  color: #aaa;
+  margin: 0 0 28px;
+  font-size: 1rem;
+}
+
+.pol-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25D366;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 16px 36px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.pol-wa-btn:hover {
+  background: #128C7E;
+  transform: translateY(-2px);
+}
+
+.pol-contacto-sub {
+  margin-top: 20px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* ── Responsivo móvil ────────────────────────────── */
+@media (max-width: 767px) {
+  .pol-header {
+    padding: 48px 20px 36px;
+  }
+
+  .pol-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .pol-tabs {
+    display: flex;
+  }
+
+  .pol-layout {
+    padding: 24px 16px 60px;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pol-sidebar {
+    display: none;
+  }
+
+  .pol-seccion {
+    padding: 28px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    scroll-margin-top: 120px;
+  }
+
+  .pol-seccion h2 {
+    font-size: 1.3rem;
+  }
+
+  .pol-cards-row {
+    grid-template-columns: 1fr;
+  }
+
+  .pol-card-warning,
+  .pol-card-alert,
+  .pol-card-green,
+  .pol-card-blue {
+    padding: 16px;
+  }
+}

@@ -14,6 +14,7 @@ import Registro from './pages/Registro'
 import Cuenta from './pages/Cuenta'
 import MisPedidos from './pages/MisPedidos'
 import MiListaDeseos from './pages/MiListaDeseos'
+import Politicas from './pages/Politicas'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/cuenta" element={<Cuenta />} />
                 <Route path="/mis-pedidos" element={<MisPedidos />} />
                 <Route path="/mi-lista-deseos" element={<MiListaDeseos />} />
+                <Route path="/politicas" element={<Politicas />} />
               </Route>
             </Routes>
           </CartProvider>

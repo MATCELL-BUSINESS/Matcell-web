@@ -22,18 +22,18 @@ const FOOTER_SECTIONS = [
   {
     title: 'Ayuda',
     links: [
-      { label: 'Preguntas frecuentes', to: '/ayuda/preguntas-frecuentes' },
-      { label: 'Envíos', to: '/ayuda/envios' },
-      { label: 'Garantía', to: '/ayuda/garantia' },
-      { label: 'Contacto', to: '/ayuda/contacto' },
+      { label: 'Preguntas frecuentes', to: '/politicas#garantia' },
+      { label: 'Envíos', to: '/politicas#envios' },
+      { label: 'Garantía', to: '/politicas#garantia' },
+      { label: 'Contacto', to: 'https://wa.me/573023719863', external: true },
     ],
   },
   {
     title: 'Políticas',
     links: [
-      { label: 'Términos y condiciones', to: '/politicas/terminos' },
-      { label: 'Política de privacidad', to: '/politicas/privacidad' },
-      { label: 'Política de devoluciones', to: '/politicas/devoluciones' },
+      { label: 'Términos y condiciones', to: '/politicas#terminos' },
+      { label: 'Política de privacidad', to: '/politicas#privacidad' },
+      { label: 'Cambios y devoluciones', to: '/politicas#cambios' },
     ],
   },
 ]
@@ -53,7 +53,10 @@ function FooterColumn({ title, links }) {
       <ul className="footer-col-links">
         {links.map((link) => (
           <li key={link.label}>
-            <Link to={link.to}>{link.label}</Link>
+            {link.external
+              ? <a href={link.to} target="_blank" rel="noopener noreferrer">{link.label}</a>
+              : <Link to={link.to}>{link.label}</Link>
+            }
           </li>
         ))}
       </ul>
