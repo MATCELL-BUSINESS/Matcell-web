@@ -167,16 +167,38 @@
   margin-bottom: 28px;
 }
 
-.pol-card-garantia {
+.pol-card-tipo {
   background: #f8f8f8;
+  border-left: 4px solid #FF2D00;
   border-radius: 12px;
   padding: 24px;
-  text-align: center;
 }
 
 .pol-card-icon {
   font-size: 2rem;
   margin-bottom: 10px;
+}
+
+.pol-card-tipo h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 8px;
+}
+
+.pol-card-tipo p {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Alias por compatibilidad */
+.pol-card-garantia {
+  background: #f8f8f8;
+  border-left: 4px solid #FF2D00;
+  border-radius: 12px;
+  padding: 24px;
 }
 
 .pol-card-garantia h3 {
@@ -342,6 +364,24 @@
   border-bottom: none;
 }
 
+/* ── Nota gris ───────────────────────────────────── */
+.pol-card-nota {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: #555;
+  margin: 20px 0 0;
+  line-height: 1.6;
+}
+
+.pol-nota-final {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
 /* ── Contacto final ──────────────────────────────── */
 .pol-contacto {
   background: #111;
@@ -385,6 +425,12 @@
   margin-top: 20px;
   font-size: 0.85rem;
   color: #666;
+}
+
+.pol-contacto-fecha {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #444;
 }
 
 /* ── Responsivo móvil ────────────────────────────── */

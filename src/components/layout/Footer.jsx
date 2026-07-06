@@ -9,33 +9,17 @@ import { FaWhatsapp, FaTiktok } from 'react-icons/fa'
 import { useTiendaConfig } from '../../context/TiendaConfigContext'
 import './Footer.css'
 
-const FOOTER_SECTIONS = [
-  {
-    title: 'Categorías',
-    links: [
-      { label: 'iPhone', to: '/catalogo/iphone' },
-      { label: 'Ofertas', to: '/catalogo/ofertas' },
-      { label: 'Accesorios', to: '/catalogo/accesorios' },
-      { label: 'iPad / Mac', to: '/catalogo/ipad-mac' },
-    ],
-  },
-  {
-    title: 'Ayuda',
-    links: [
-      { label: 'Preguntas frecuentes', to: '/politicas#garantia' },
-      { label: 'Envíos', to: '/politicas#envios' },
-      { label: 'Garantía', to: '/politicas#garantia' },
-      { label: 'Contacto', to: 'https://wa.me/573023719863', external: true },
-    ],
-  },
-  {
-    title: 'Políticas',
-    links: [
-      { label: 'Términos y condiciones', to: '/politicas#terminos' },
-      { label: 'Política de privacidad', to: '/politicas#privacidad' },
-      { label: 'Cambios y devoluciones', to: '/politicas#cambios' },
-    ],
-  },
+const CATEGORIAS = [
+  { label: 'iPhone',    to: '/catalogo/iphone' },
+  { label: 'Ofertas',   to: '/catalogo/ofertas' },
+  { label: 'Accesorios',to: '/catalogo/accesorios' },
+  { label: 'iPad / Mac',to: '/catalogo/ipad-mac' },
+]
+
+const POLITICAS = [
+  { label: 'Términos y condiciones', to: '/politicas#terminos' },
+  { label: 'Política de privacidad', to: '/politicas#privacidad' },
+  { label: 'Cambios y devoluciones', to: '/politicas#cambios' },
 ]
 
 function FooterColumn({ title, links }) {
@@ -67,6 +51,13 @@ function FooterColumn({ title, links }) {
 export default function Footer() {
   const { whatsapp, instagram_url, facebook_url, tiktok_url, descripcion_footer } =
     useTiendaConfig()
+
+  const AYUDA = [
+    { label: 'Envíos',               to: '/politicas#envios' },
+    { label: 'Garantía',             to: '/politicas#garantia' },
+    { label: 'Términos',             to: '/politicas#terminos' },
+    { label: 'Contacto por WhatsApp',to: `https://wa.me/${whatsapp}`, external: true },
+  ]
   const whatsappHref = `https://wa.me/${whatsapp}`
 
   return (
@@ -95,9 +86,9 @@ export default function Footer() {
         </div>
 
         <div className="footer-cols">
-          {FOOTER_SECTIONS.map((section) => (
-            <FooterColumn key={section.title} {...section} />
-          ))}
+          <FooterColumn title="Categorías" links={CATEGORIAS} />
+          <FooterColumn title="Ayuda"      links={AYUDA} />
+          <FooterColumn title="Políticas"  links={POLITICAS} />
         </div>
       </div>
 
