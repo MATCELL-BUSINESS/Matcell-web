@@ -182,11 +182,12 @@
 .cart-bundle-oferta {
   display: flex;
   align-items: center;
-  gap: 7px;
+  flex-wrap: wrap;
+  gap: 5px 8px;
   background: #fff8f0;
   border: 1px dashed var(--color-naranja);
   border-radius: 8px;
-  padding: 7px 12px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
   color: #c2440a;
@@ -200,18 +201,36 @@
   background: #ffeedd;
 }
 
-.cart-bundle-oferta svg {
+.cart-bundle-oferta > svg {
   flex-shrink: 0;
   color: var(--color-naranja);
 }
 
-.cart-bundle-oferta span:first-of-type {
-  flex: 1;
+.cart-bundle-label {
+  font-weight: 700;
 }
 
-.cart-bundle-precio {
-  font-weight: 800;
+.cart-bundle-totales {
+  white-space: nowrap;
+}
+
+.cart-bundle-totales s {
+  color: #aaa;
+  font-weight: 400;
+  margin-right: 3px;
+}
+
+.cart-bundle-totales strong {
   color: var(--color-naranja);
+}
+
+.cart-bundle-ahorro {
+  background: #ff4d00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 6px;
   white-space: nowrap;
 }
 

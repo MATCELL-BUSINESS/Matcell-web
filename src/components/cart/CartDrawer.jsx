@@ -7,9 +7,17 @@ import { formatCOP } from '../../lib/format'
 import ShippingProgress from './ShippingProgress'
 import './CartDrawer.css'
 
-function calcularPrecioBundle(precioBase, tipo, descuento) {
-  if (tipo === 'porcentaje') return Math.round(precioBase * (1 - descuento / 100))
-  return Math.max(0, Math.round(precioBase - descuento))
+function calcularBundle(precioBase, cantidad, tipo, descuento) {
+  const totalBase = precioBase * cantidad
+  const totalConDesc = tipo === 'porcentaje'
+    ? Math.round(totalBase * (1 - descuento / 100))
+    : Math.max(0, totalBase - descuento)
+  return {
+    totalBase,
+    totalConDesc,
+    ahorro: totalBase - totalConDesc,
+    precioUnitario: Math.round(totalConDesc / cantidad),
+  }
 }
 
 export default function CartDrawer() {
@@ -82,17 +90,13 @@ export default function CartDrawer() {
                   let bundleOferta = null
                   if (bundle) {
                     if (bundle.bundle_3_activo && item.cantidad >= 2) {
-                      const precio = calcularPrecioBundle(precioBase, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
-                      const desc = bundle.bundle_3_tipo === 'porcentaje'
-                        ? `${bundle.bundle_3_descuento}% dto.`
-                        : formatCOP(bundle.bundle_3_descuento) + ' menos'
-                      bundleOferta = { cantidad: 3, precio, label: `Lleva 3 y ahorra ${desc} c/u`, descripcion: `Bundle x3 – ${desc}` }
+                      const b = calcularBundle(precioBase, 3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
+                      const desc = bundle.bundle_3_tipo === 'porcentaje' ? `${bundle.bundle_3_descuento}%` : formatCOP(bundle.bundle_3_descuento)
+                      bundleOferta = { cantidad: 3, ...b, descripcion: `Bundle x3 – ${desc} dto.` }
                     } else if (bundle.bundle_2_activo && item.cantidad < 2) {
-                      const precio = calcularPrecioBundle(precioBase, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
-                      const desc = bundle.bundle_2_tipo === 'porcentaje'
-                        ? `${bundle.bundle_2_descuento}% dto.`
-                        : formatCOP(bundle.bundle_2_descuento) + ' menos'
-                      bundleOferta = { cantidad: 2, precio, label: `Lleva 2 y ahorra ${desc} c/u`, descripcion: `Bundle x2 – ${desc}` }
+                      const b = calcularBundle(precioBase, 2, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
+                      const desc = bundle.bundle_2_tipo === 'porcentaje' ? `${bundle.bundle_2_descuento}%` : formatCOP(bundle.bundle_2_descuento)
+                      bundleOferta = { cantidad: 2, ...b, descripcion: `Bundle x2 – ${desc} dto.` }
                     }
                   }
 
@@ -147,11 +151,15 @@ export default function CartDrawer() {
                       {bundleOferta && (
                         <button
                           className="cart-bundle-oferta"
-                          onClick={() => applyBundle(item.cartItemId, bundleOferta.cantidad, bundleOferta.precio, bundleOferta.descripcion)}
+                          onClick={() => applyBundle(item.cartItemId, bundleOferta.cantidad, bundleOferta.precioUnitario, bundleOferta.descripcion)}
                         >
                           <FiTag size={13} />
-                          <span>{bundleOferta.label}</span>
-                          <span className="cart-bundle-precio">{formatCOP(bundleOferta.precio)} c/u</span>
+                          <span className="cart-bundle-label">Lleva {bundleOferta.cantidad}</span>
+                          <span className="cart-bundle-totales">
+                            <s>{formatCOP(bundleOferta.totalBase)}</s>
+                            {' '}<strong>{formatCOP(bundleOferta.totalConDesc)}</strong>
+                          </span>
+                          <span className="cart-bundle-ahorro">Ahorras {formatCOP(bundleOferta.ahorro)}</span>
                         </button>
                       )}
                     </div>

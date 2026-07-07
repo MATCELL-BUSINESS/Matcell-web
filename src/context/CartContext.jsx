@@ -88,6 +88,34 @@ export function CartProvider({ children }) {
     )
   }
 
+  const addItemBundle = (nuevoItem, cantidadBundle, precioBundle, descripcion) => {
+    setItems((actuales) => {
+      const existente = actuales.find(
+        (item) => item.productoId === nuevoItem.productoId && item.color === nuevoItem.color
+      )
+      if (existente) {
+        return actuales.map((item) =>
+          item.cartItemId === existente.cartItemId
+            ? { ...item, cantidad: cantidadBundle, precio: precioBundle, esBundle: true, bundleDescripcion: descripcion, precioOriginal: item.precioOriginal ?? item.precio }
+            : item
+        )
+      }
+      return [
+        ...actuales,
+        {
+          cartItemId: `${nuevoItem.productoId}-${nuevoItem.color ?? 'sin-color'}-${Date.now()}`,
+          ...nuevoItem,
+          cantidad: cantidadBundle,
+          precio: precioBundle,
+          esBundle: true,
+          bundleDescripcion: descripcion,
+          precioOriginal: nuevoItem.precio,
+        },
+      ]
+    })
+    setDrawerOpen(true)
+  }
+
   const applyBundle = (cartItemId, cantidadBundle, precioBundle, descripcion) => {
     setItems((actuales) =>
       actuales.map((item) => {
@@ -122,6 +150,7 @@ export function CartProvider({ children }) {
     addItemSilent,
     removeItem,
     updateCantidad,
+    addItemBundle,
     applyBundle,
     clearCart,
     subtotal,

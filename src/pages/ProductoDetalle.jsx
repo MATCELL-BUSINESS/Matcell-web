@@ -18,6 +18,7 @@ import {
   getEnvioNacional,
   getAccesoriosSugeridos,
   getResenasProducto,
+  getBundleProducto,
 } from '../lib/api'
 import { formatCOP } from '../lib/format'
 import { useCart } from '../context/CartContext'
@@ -45,7 +46,7 @@ const SPECS_LABELS = [
 
 export default function ProductoDetalle() {
   const { id } = useParams()
-  const { addItem, addItemSilent } = useCart()
+  const { addItem, addItemSilent, addItemBundle } = useCart()
   const { whatsapp } = useTiendaConfig()
   const navigate = useNavigate()
 
@@ -60,6 +61,7 @@ export default function ProductoDetalle() {
   const [asesorModalOpen, setAsesorModalOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [copiado, setCopiado] = useState(false)
+  const [bundle, setBundle] = useState(null)
   const ctasRef = useRef(null)
 
   useEffect(() => {
@@ -95,6 +97,9 @@ export default function ProductoDetalle() {
         if (data) {
           getAccesoriosSugeridos(data.id).then(setAccesorios).catch(console.error)
           getResenasProducto(data.id).then(setReviewsData).catch(console.error)
+          if (data.categorias?.slug === 'accesorios') {
+            getBundleProducto(data.id).then(setBundle).catch(console.error)
+          }
         }
       })
       .catch(console.error)
@@ -210,6 +215,20 @@ export default function ProductoDetalle() {
     precio: precioMostrado,
     color: varianteLabel || null,
     stockDisponible: null,
+  }
+
+  const calcularBundle = (cantidad, tipo, descuento) => {
+    const totalBase = precioMostrado * cantidad
+    const totalConDesc = tipo === 'porcentaje'
+      ? Math.round(totalBase * (1 - descuento / 100))
+      : Math.max(0, totalBase - descuento)
+    return { totalBase, totalConDesc, ahorro: totalBase - totalConDesc, precioUnitario: Math.round(totalConDesc / cantidad) }
+  }
+
+  const handleAgregarBundle = (cantidad, tipo, descuento, descripcion) => {
+    if (agotado) return
+    const { precioUnitario } = calcularBundle(cantidad, tipo, descuento)
+    addItemBundle(itemParaCarrito, cantidad, precioUnitario, descripcion)
   }
 
   const handleAgregarAlCarrito = () => {
@@ -423,6 +442,51 @@ export default function ProductoDetalle() {
               <FiShoppingCart size={18} />
               {agotado ? 'Agotado' : 'Agregar al carrito'}
             </button>
+
+            {esAccesorio && bundle && !agotado && (
+              <div className="producto-bundle-wrap">
+                {bundle.bundle_2_activo && (() => {
+                  const b = calcularBundle(2, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
+                  const desc = bundle.bundle_2_tipo === 'porcentaje' ? `${bundle.bundle_2_descuento}% dto.` : `${formatCOP(bundle.bundle_2_descuento)} dto.`
+                  return (
+                    <div className="producto-bundle-tier">
+                      <span className="producto-bundle-tag">🏷️ Lleva 2</span>
+                      <span className="producto-bundle-precios">
+                        <s>{formatCOP(b.totalBase)}</s>
+                        {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                      </span>
+                      <span className="producto-bundle-ahorro">· Ahorras {formatCOP(b.ahorro)}</span>
+                      <button
+                        className="producto-bundle-btn"
+                        onClick={() => handleAgregarBundle(2, bundle.bundle_2_tipo, bundle.bundle_2_descuento, `Bundle x2 – ${desc}`)}
+                      >
+                        Agregar 2 al carrito
+                      </button>
+                    </div>
+                  )
+                })()}
+                {bundle.bundle_3_activo && (() => {
+                  const b = calcularBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
+                  const desc = bundle.bundle_3_tipo === 'porcentaje' ? `${bundle.bundle_3_descuento}% dto.` : `${formatCOP(bundle.bundle_3_descuento)} dto.`
+                  return (
+                    <div className="producto-bundle-tier">
+                      <span className="producto-bundle-tag">🏷️ Lleva 3</span>
+                      <span className="producto-bundle-precios">
+                        <s>{formatCOP(b.totalBase)}</s>
+                        {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                      </span>
+                      <span className="producto-bundle-ahorro">· Ahorras {formatCOP(b.ahorro)}</span>
+                      <button
+                        className="producto-bundle-btn"
+                        onClick={() => handleAgregarBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento, `Bundle x3 – ${desc}`)}
+                      >
+                        Agregar 3 al carrito
+                      </button>
+                    </div>
+                  )
+                })()}
+              </div>
+            )}
 
             <button
               className="btn producto-cta producto-cta-comprar"

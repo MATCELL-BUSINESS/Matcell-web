@@ -534,6 +534,71 @@
   font-weight: 700;
 }
 
+/* ── Bundle card en ficha de producto ────────────────── */
+.producto-bundle-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.producto-bundle-tier {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  border: 1.5px dashed #FF2D00;
+  background: #fff5f2;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.producto-bundle-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c2300a;
+}
+
+.producto-bundle-precios {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.producto-bundle-precios s {
+  color: #aaa;
+  font-weight: 400;
+  margin-right: 4px;
+}
+
+.producto-bundle-precios strong {
+  color: #c2300a;
+  font-weight: 800;
+}
+
+.producto-bundle-ahorro {
+  font-size: 12px;
+  color: #888;
+  flex: 1;
+  min-width: 100%;
+}
+
+.producto-bundle-btn {
+  margin-left: auto;
+  background: #FF2D00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.producto-bundle-btn:hover {
+  background: #d42600;
+}
+
 /* ── Old h1 margin override (replaced by title-row) ── */
 .producto-info h1 {
   margin: 0;
