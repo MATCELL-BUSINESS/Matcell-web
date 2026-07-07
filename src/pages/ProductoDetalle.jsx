@@ -19,7 +19,7 @@ import {
   getAccesoriosSugeridos,
   getResenasProducto,
   getBundleProducto,
-  getCategoriaBundle,
+  getSubsubcategoriaBundle,
 } from '../lib/api'
 import { formatCOP } from '../lib/format'
 import { useCart } from '../context/CartContext'
@@ -63,7 +63,7 @@ export default function ProductoDetalle() {
   const [shareOpen, setShareOpen] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [bundle, setBundle] = useState(null)
-  const [categoriaBundle, setCategoriaBundle] = useState(null)
+  const [subsubcategoriaBundle, setSubsubcategoriaBundle] = useState(null)
   const [bundleOpcion, setBundleOpcion] = useState(1)
   const [bundleExtraVariante, setBundleExtraVariante] = useState(null)
   const ctasRef = useRef(null)
@@ -103,7 +103,7 @@ export default function ProductoDetalle() {
           getResenasProducto(data.id).then(setReviewsData).catch(console.error)
           if (data.categorias?.slug === 'accesorios') {
             getBundleProducto(data.id).then(setBundle).catch(console.error)
-            getCategoriaBundle(data.categoria_id).then(setCategoriaBundle).catch(console.error)
+            getSubsubcategoriaBundle(data.subcategoria_id).then(setSubsubcategoriaBundle).catch(console.error)
           }
         }
       })
@@ -222,6 +222,7 @@ export default function ProductoDetalle() {
     stockDisponible: null,
     categoriaId: producto.categoria_id,
     categoriaSlug: producto.categorias?.slug,
+    subcategoriaId: producto.subcategoria_id,
   }
 
   const calcularBundleOpcion = (cantidad, tipo, descuento) => {
@@ -475,7 +476,7 @@ export default function ProductoDetalle() {
                   {bundle.bundle_2_activo && (() => {
                     const esMisma = !bundleExtraVariante || bundleExtraVariante.id === (varianteActiva?.id ?? null)
                     const tipo = esMisma ? bundle.bundle_2_tipo : 'valor'
-                    const descuento = esMisma ? bundle.bundle_2_descuento : (categoriaBundle?.bundle_descuento_x2 ?? 0)
+                    const descuento = esMisma ? bundle.bundle_2_descuento : (subcategoriaBundle?.bundle_descuento_x2 ?? 0)
                     const b = calcularBundleOpcion(2, tipo, descuento)
                     return (
                       <div key="b2" className="bundle-opcion-group">
@@ -515,7 +516,7 @@ export default function ProductoDetalle() {
                                     )
                                   })}
                                 </div>
-                                {!esMisma && categoriaBundle && b.ahorro > 0 && (
+                                {!esMisma && subcategoriaBundle && b.ahorro > 0 && (
                                   <p className="bundle-mixto-nota">Descuento aplicado por llevar 2 accesorios</p>
                                 )}
                               </div>

@@ -233,6 +233,29 @@ export async function getCategoriasBundleParaCarrito(categoriaIds) {
   return mapa
 }
 
+export async function getSubcategoriaBundle(subcategoriaId) {
+  if (!subcategoriaId) return null
+  const { data, error } = await supabase
+    .from('subcategorias')
+    .select('id, nombre, bundle_descuento_x2, bundle_descuento_x3')
+    .eq('id', subcategoriaId)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function getSubcategoriasBundleParaCarrito(subcategoriaIds) {
+  if (!subcategoriaIds.length) return {}
+  const { data, error } = await supabase
+    .from('subcategorias')
+    .select('id, nombre, bundle_descuento_x2, bundle_descuento_x3')
+    .in('id', subcategoriaIds)
+  if (error) throw error
+  const mapa = {}
+  for (const s of data ?? []) mapa[s.id] = s
+  return mapa
+}
+
 export async function getBundleProducto(productoId) {
   const { data, error } = await supabase
     .from('bundles')

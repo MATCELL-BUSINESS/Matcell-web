@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiTag } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
-import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito, getCategoriasBundleParaCarrito } from '../../lib/api'
+import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito, getSubcategoriasBundleParaCarrito } from '../../lib/api'
 import { formatCOP } from '../../lib/format'
 import ShippingProgress from './ShippingProgress'
 import './CartDrawer.css'
@@ -25,7 +25,7 @@ export default function CartDrawer() {
   const [envio, setEnvio] = useState(null)
   const [sugeridos, setSugeridos] = useState([])
   const [bundles, setBundles] = useState({})
-  const [categoriasBundles, setCategoriasBundles] = useState({})
+  const [subcategoriasBundles, setSubcategoriasBundles] = useState({})
 
   useEffect(() => {
     getEnvioNacional().then(setEnvio).catch(console.error)
@@ -34,11 +34,11 @@ export default function CartDrawer() {
   useEffect(() => {
     if (!drawerOpen) return
     const idsEnCarrito = items.map((item) => item.productoId)
-    const catIds = [...new Set(items.map((i) => i.categoriaId).filter(Boolean))]
+    const subcatIds = [...new Set(items.map((i) => i.subcategoriaId).filter(Boolean))]
     getAccesoriosSugeridos(idsEnCarrito, 3).then(setSugeridos).catch(console.error)
     getBundlesParaCarrito(idsEnCarrito).then(setBundles).catch(console.error)
-    if (catIds.length) {
-      getCategoriasBundleParaCarrito(catIds).then(setCategoriasBundles).catch(console.error)
+    if (subcatIds.length) {
+      getSubcategoriasBundleParaCarrito(subcatIds).then(setSubcategoriasBundles).catch(console.error)
     }
   }, [drawerOpen, items])
 
@@ -46,24 +46,23 @@ export default function CartDrawer() {
   const categoriasMixtas = (() => {
     const grupos = {}
     for (const item of items) {
-      if (!item.categoriaId) continue
-      if (!grupos[item.categoriaId]) grupos[item.categoriaId] = []
-      grupos[item.categoriaId].push(item)
+      if (!item.subcategoriaId) continue
+      if (!grupos[item.subcategoriaId]) grupos[item.subcategoriaId] = []
+      grupos[item.subcategoriaId].push(item)
     }
     const resultado = []
-    for (const [catId, catItems] of Object.entries(grupos)) {
-      const productosDistintos = new Set(catItems.map((i) => i.productoId))
+    for (const [subcatId, subcatItems] of Object.entries(grupos)) {
+      const productosDistintos = new Set(subcatItems.map((i) => i.productoId))
       if (productosDistintos.size < 2) continue
-      const catBundle = categoriasBundles[catId]
-      if (!catBundle?.bundle_descuento_x2) continue
-      // solo items que aún no tienen bundle aplicado
-      const itemsSinBundle = catItems.filter((i) => !i.esBundle)
+      const subcatBundle = subcategoriasBundles[subcatId]
+      if (!subcatBundle?.bundle_descuento_x2) continue
+      const itemsSinBundle = subcatItems.filter((i) => !i.esBundle)
       if (itemsSinBundle.length < 2) continue
-      const descuento = catBundle.bundle_descuento_x2
+      const descuento = subcatBundle.bundle_descuento_x2
       const ahorro = itemsSinBundle.reduce((acc, i) => acc + descuento * i.cantidad, 0)
       resultado.push({
-        catId,
-        nombre: catBundle.nombre,
+        catId: subcatId,
+        nombre: subcatBundle.nombre,
         items: itemsSinBundle,
         descuento,
         ahorro,
