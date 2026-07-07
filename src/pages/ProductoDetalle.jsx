@@ -19,7 +19,7 @@ import {
   getAccesoriosSugeridos,
   getResenasProducto,
   getBundleProducto,
-  getSubsubcategoriaBundle,
+  getSubcategoriaBundle,
 } from '../lib/api'
 import { formatCOP } from '../lib/format'
 import { useCart } from '../context/CartContext'
@@ -63,7 +63,7 @@ export default function ProductoDetalle() {
   const [shareOpen, setShareOpen] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [bundle, setBundle] = useState(null)
-  const [subsubcategoriaBundle, setSubsubcategoriaBundle] = useState(null)
+  const [subsubcategoriaBundle, setSubcategoriaBundle] = useState(null)
   const [bundleOpcion, setBundleOpcion] = useState(1)
   const [bundleExtraVariante, setBundleExtraVariante] = useState(null)
   const ctasRef = useRef(null)
@@ -103,7 +103,7 @@ export default function ProductoDetalle() {
           getResenasProducto(data.id).then(setReviewsData).catch(console.error)
           if (data.categorias?.slug === 'accesorios') {
             getBundleProducto(data.id).then(setBundle).catch(console.error)
-            getSubsubcategoriaBundle(data.subcategoria_id).then(setSubsubcategoriaBundle).catch(console.error)
+            getSubcategoriaBundle(data.subcategoria_id).then(setSubcategoriaBundle).catch(console.error)
           }
         }
       })
