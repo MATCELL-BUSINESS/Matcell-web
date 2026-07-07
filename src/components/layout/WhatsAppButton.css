@@ -27,3 +27,15 @@
     height: 50px;
   }
 }
+
+/* Sube el botón cuando la barra sticky de compra está activa */
+body.sticky-buy-active .whatsapp-float {
+  bottom: 80px;
+  transition: bottom 0.3s ease, transform 0.2s;
+}
+
+@media (max-width: 600px) {
+  body.sticky-buy-active .whatsapp-float {
+    bottom: 76px;
+  }
+}

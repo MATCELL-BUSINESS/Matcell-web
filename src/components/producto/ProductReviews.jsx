@@ -12,6 +12,30 @@ function Stars({ rating, size = 14 }) {
   )
 }
 
+function ReviewCard({ resena }) {
+  const [expanded, setExpanded] = useState(false)
+  const LIMIT = 160
+  const long = resena.comentario.length > LIMIT
+
+  return (
+    <div className="product-review-card-inner">
+      <Stars rating={resena.calificacion} />
+      <p className="review-comment">
+        "{expanded || !long ? resena.comentario : resena.comentario.slice(0, LIMIT) + '…'}"
+      </p>
+      {long && (
+        <button className="review-ver-mas" onClick={() => setExpanded((e) => !e)}>
+          {expanded ? 'Ver menos' : 'Ver más'}
+        </button>
+      )}
+      <p className="review-author">
+        {resena.nombre_cliente}
+        {resena.ciudad && <span> &middot; {resena.ciudad}</span>}
+      </p>
+    </div>
+  )
+}
+
 const INTERVALO = 4000
 
 export default function ProductReviews({ resenas = [], esEspecifica }) {
@@ -114,12 +138,7 @@ export default function ProductReviews({ resenas = [], esEspecifica }) {
               className="product-review-card"
               style={{ minWidth: `${cardPct}%` }}
             >
-              <Stars rating={resena.calificacion} />
-              <p className="review-comment">"{resena.comentario}"</p>
-              <p className="review-author">
-                {resena.nombre_cliente}
-                {resena.ciudad && <span> &middot; {resena.ciudad}</span>}
-              </p>
+              <ReviewCard resena={resena} />
             </div>
           ))}
         </div>

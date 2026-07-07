@@ -9,11 +9,18 @@ export default function StickyBuyBar({ producto, precio, agotado, onAddToCart, o
   useEffect(() => {
     if (!ctaRef?.current) return
     const observer = new IntersectionObserver(
-      ([entry]) => setVisible(!entry.isIntersecting),
+      ([entry]) => {
+        const show = !entry.isIntersecting
+        setVisible(show)
+        document.body.classList.toggle('sticky-buy-active', show)
+      },
       { threshold: 0 }
     )
     observer.observe(ctaRef.current)
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      document.body.classList.remove('sticky-buy-active')
+    }
   }, [ctaRef])
 
   return (

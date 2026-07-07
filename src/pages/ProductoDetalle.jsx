@@ -492,7 +492,7 @@ export default function ProductoDetalle() {
         </div>
       </div>
 
-      <AccessorySuggestions productos={accesorios} />
+      <AccessorySuggestions productos={accesorios} esAccesorio={esAccesorio} />
       <ProductReviews resenas={reviewsData.resenas} esEspecifica={reviewsData.esEspecifica} />
 
       <section className="producto-review-form">
