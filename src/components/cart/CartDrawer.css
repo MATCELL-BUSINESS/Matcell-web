@@ -319,6 +319,71 @@
   margin-top: 14px;
 }
 
+/* ── Banner categorías mixtas ─────────────────────────── */
+.cart-cat-mix {
+  margin-bottom: 8px;
+}
+
+.cart-cat-mix-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff8e1;
+  border: 1.5px solid #f9a825;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.cart-cat-mix-icon {
+  color: #f9a825;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cart-cat-mix-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-cat-mix-titulo {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #444;
+  margin: 0 0 2px;
+}
+
+.cart-cat-mix-desc {
+  font-size: 11.5px;
+  color: #666;
+  margin: 0 0 2px;
+}
+
+.cart-cat-mix-ahorro {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin: 0;
+}
+
+.cart-cat-mix-btn {
+  background: #f9a825;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: center;
+  transition: background 0.15s;
+  font-family: var(--font-principal);
+}
+
+.cart-cat-mix-btn:hover {
+  background: #e65100;
+}
+
 @media (max-width: 500px) {
   .cart-drawer {
     width: 100%;

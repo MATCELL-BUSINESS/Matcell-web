@@ -2,32 +2,30 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiTag } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
-import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito } from '../../lib/api'
+import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito, getCategoriasBundleParaCarrito } from '../../lib/api'
 import { formatCOP } from '../../lib/format'
 import ShippingProgress from './ShippingProgress'
 import './CartDrawer.css'
 
 function calcularBundle(precioBase, cantidad, tipo, descuento) {
+  const descPorUnidad = tipo === 'porcentaje'
+    ? Math.round(precioBase * Number(descuento) / 100)
+    : Number(descuento)
+  const precioUnitario = Math.max(0, precioBase - descPorUnidad)
   const totalBase = precioBase * cantidad
-  const totalConDesc = tipo === 'porcentaje'
-    ? Math.round(totalBase * (1 - descuento / 100))
-    : Math.max(0, totalBase - descuento)
-  return {
-    totalBase,
-    totalConDesc,
-    ahorro: totalBase - totalConDesc,
-    precioUnitario: Math.round(totalConDesc / cantidad),
-  }
+  const totalConDesc = precioUnitario * cantidad
+  return { totalBase, totalConDesc, ahorro: totalBase - totalConDesc, precioUnitario }
 }
 
 export default function CartDrawer() {
-  const { items, removeItem, updateCantidad, applyBundle, subtotal, drawerOpen, closeDrawer, addItem } =
+  const { items, removeItem, updateCantidad, applyBundle, applyCategoriBundle, subtotal, drawerOpen, closeDrawer, addItem } =
     useCart()
   const navigate = useNavigate()
 
   const [envio, setEnvio] = useState(null)
   const [sugeridos, setSugeridos] = useState([])
   const [bundles, setBundles] = useState({})
+  const [categoriasBundles, setCategoriasBundles] = useState({})
 
   useEffect(() => {
     getEnvioNacional().then(setEnvio).catch(console.error)
@@ -36,9 +34,43 @@ export default function CartDrawer() {
   useEffect(() => {
     if (!drawerOpen) return
     const idsEnCarrito = items.map((item) => item.productoId)
+    const catIds = [...new Set(items.map((i) => i.categoriaId).filter(Boolean))]
     getAccesoriosSugeridos(idsEnCarrito, 3).then(setSugeridos).catch(console.error)
     getBundlesParaCarrito(idsEnCarrito).then(setBundles).catch(console.error)
+    if (catIds.length) {
+      getCategoriasBundleParaCarrito(catIds).then(setCategoriasBundles).catch(console.error)
+    }
   }, [drawerOpen, items])
+
+  // Detectar categorías mixtas: 2+ productoId distintos de la misma categoría
+  const categoriasMixtas = (() => {
+    const grupos = {}
+    for (const item of items) {
+      if (!item.categoriaId) continue
+      if (!grupos[item.categoriaId]) grupos[item.categoriaId] = []
+      grupos[item.categoriaId].push(item)
+    }
+    const resultado = []
+    for (const [catId, catItems] of Object.entries(grupos)) {
+      const productosDistintos = new Set(catItems.map((i) => i.productoId))
+      if (productosDistintos.size < 2) continue
+      const catBundle = categoriasBundles[catId]
+      if (!catBundle?.bundle_descuento_x2) continue
+      // solo items que aún no tienen bundle aplicado
+      const itemsSinBundle = catItems.filter((i) => !i.esBundle)
+      if (itemsSinBundle.length < 2) continue
+      const descuento = catBundle.bundle_descuento_x2
+      const ahorro = itemsSinBundle.reduce((acc, i) => acc + descuento * i.cantidad, 0)
+      resultado.push({
+        catId,
+        nombre: catBundle.nombre,
+        items: itemsSinBundle,
+        descuento,
+        ahorro,
+      })
+    }
+    return resultado
+  })()
 
   const handleAgregarSugerido = (producto) => {
     addItem({
@@ -81,22 +113,51 @@ export default function CartDrawer() {
             <>
               <ShippingProgress subtotal={subtotal} montoGratis={envio?.gratis_desde_monto} />
 
+              {/* Banners de categorías mixtas */}
+              {categoriasMixtas.map((grupo) => (
+                <div key={grupo.catId} className="cart-cat-mix">
+                  <div className="cart-cat-mix-banner">
+                    <FiTag size={14} className="cart-cat-mix-icon" />
+                    <div className="cart-cat-mix-info">
+                      <p className="cart-cat-mix-titulo">
+                        Oferta mix — {grupo.nombre}
+                      </p>
+                      <p className="cart-cat-mix-desc">
+                        Llevás {grupo.items.length} accesorios distintos · Descuento{' '}
+                        {formatCOP(grupo.descuento)}/u
+                      </p>
+                      <p className="cart-cat-mix-ahorro">Ahorras {formatCOP(grupo.ahorro)}</p>
+                    </div>
+                    <button
+                      className="cart-cat-mix-btn"
+                      onClick={() =>
+                        applyCategoriBundle(
+                          grupo.items.map((i) => i.cartItemId),
+                          grupo.descuento
+                        )
+                      }
+                    >
+                      Aplicar
+                    </button>
+                  </div>
+                </div>
+              ))}
+
               <div className="cart-items">
                 {items.map((item) => {
                   const bundle = bundles[item.productoId]
                   const precioBase = item.precioOriginal ?? item.precio
 
-                  // Determina qué tier de bundle ofrecer
                   let bundleOferta = null
-                  if (bundle) {
+                  if (bundle && !item.esBundle) {
                     if (bundle.bundle_3_activo && item.cantidad >= 2) {
                       const b = calcularBundle(precioBase, 3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
                       const desc = bundle.bundle_3_tipo === 'porcentaje' ? `${bundle.bundle_3_descuento}%` : formatCOP(bundle.bundle_3_descuento)
-                      bundleOferta = { cantidad: 3, ...b, descripcion: `Bundle x3 – ${desc} dto.` }
+                      bundleOferta = { cantidad: 3, ...b, descripcion: `Bundle x3 mismo modelo – ${desc}/u` }
                     } else if (bundle.bundle_2_activo && item.cantidad < 2) {
                       const b = calcularBundle(precioBase, 2, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
                       const desc = bundle.bundle_2_tipo === 'porcentaje' ? `${bundle.bundle_2_descuento}%` : formatCOP(bundle.bundle_2_descuento)
-                      bundleOferta = { cantidad: 2, ...b, descripcion: `Bundle x2 – ${desc} dto.` }
+                      bundleOferta = { cantidad: 2, ...b, descripcion: `Bundle x2 mismo modelo – ${desc}/u` }
                     }
                   }
 

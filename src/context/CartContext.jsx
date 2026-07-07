@@ -132,6 +132,23 @@ export function CartProvider({ children }) {
     )
   }
 
+  const applyCategoriBundle = (cartItemIds, descuentoPorUnidad) => {
+    setItems((actuales) =>
+      actuales.map((item) => {
+        if (!cartItemIds.includes(item.cartItemId)) return item
+        const precioOriginal = item.precioOriginal ?? item.precio
+        const nuevoPrecio = Math.max(0, precioOriginal - descuentoPorUnidad)
+        return {
+          ...item,
+          precio: nuevoPrecio,
+          esBundle: true,
+          bundleDescripcion: `Bundle categoría – $${descuentoPorUnidad.toLocaleString('es-CO')}/u`,
+          precioOriginal,
+        }
+      })
+    )
+  }
+
   const clearCart = () => setItems([])
 
   const subtotal = useMemo(
@@ -152,6 +169,7 @@ export function CartProvider({ children }) {
     updateCantidad,
     addItemBundle,
     applyBundle,
+    applyCategoriBundle,
     clearCart,
     subtotal,
     cantidadTotal,

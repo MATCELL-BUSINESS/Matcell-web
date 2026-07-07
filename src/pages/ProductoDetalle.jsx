@@ -19,6 +19,7 @@ import {
   getAccesoriosSugeridos,
   getResenasProducto,
   getBundleProducto,
+  getCategoriaBundle,
 } from '../lib/api'
 import { formatCOP } from '../lib/format'
 import { useCart } from '../context/CartContext'
@@ -62,6 +63,9 @@ export default function ProductoDetalle() {
   const [shareOpen, setShareOpen] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [bundle, setBundle] = useState(null)
+  const [categoriaBundle, setCategoriaBundle] = useState(null)
+  const [bundleOpcion, setBundleOpcion] = useState(1)
+  const [bundleExtraVariante, setBundleExtraVariante] = useState(null)
   const ctasRef = useRef(null)
 
   useEffect(() => {
@@ -99,6 +103,7 @@ export default function ProductoDetalle() {
           getResenasProducto(data.id).then(setReviewsData).catch(console.error)
           if (data.categorias?.slug === 'accesorios') {
             getBundleProducto(data.id).then(setBundle).catch(console.error)
+            getCategoriaBundle(data.categoria_id).then(setCategoriaBundle).catch(console.error)
           }
         }
       })
@@ -215,19 +220,23 @@ export default function ProductoDetalle() {
     precio: precioMostrado,
     color: varianteLabel || null,
     stockDisponible: null,
+    categoriaId: producto.categoria_id,
+    categoriaSlug: producto.categorias?.slug,
   }
 
-  const calcularBundle = (cantidad, tipo, descuento) => {
+  const calcularBundleOpcion = (cantidad, tipo, descuento) => {
+    const descPorUnidad = tipo === 'porcentaje'
+      ? Math.round(precioMostrado * Number(descuento) / 100)
+      : Number(descuento)
+    const precioUnitario = Math.max(0, precioMostrado - descPorUnidad)
     const totalBase = precioMostrado * cantidad
-    const totalConDesc = tipo === 'porcentaje'
-      ? Math.round(totalBase * (1 - descuento / 100))
-      : Math.max(0, totalBase - descuento)
-    return { totalBase, totalConDesc, ahorro: totalBase - totalConDesc, precioUnitario: Math.round(totalConDesc / cantidad) }
+    const totalConDesc = precioUnitario * cantidad
+    return { totalBase, totalConDesc, ahorro: totalBase - totalConDesc, precioUnitario }
   }
 
   const handleAgregarBundle = (cantidad, tipo, descuento, descripcion) => {
     if (agotado) return
-    const { precioUnitario } = calcularBundle(cantidad, tipo, descuento)
+    const { precioUnitario } = calcularBundleOpcion(cantidad, tipo, descuento)
     addItemBundle(itemParaCarrito, cantidad, precioUnitario, descripcion)
   }
 
@@ -443,48 +452,121 @@ export default function ProductoDetalle() {
               {agotado ? 'Agotado' : 'Agregar al carrito'}
             </button>
 
-            {esAccesorio && bundle && !agotado && (
-              <div className="producto-bundle-wrap">
-                {bundle.bundle_2_activo && (() => {
-                  const b = calcularBundle(2, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
-                  const desc = bundle.bundle_2_tipo === 'porcentaje' ? `${bundle.bundle_2_descuento}% dto.` : `${formatCOP(bundle.bundle_2_descuento)} dto.`
-                  return (
-                    <div className="producto-bundle-tier">
-                      <span className="producto-bundle-tag">🏷️ Lleva 2</span>
-                      <span className="producto-bundle-precios">
-                        <s>{formatCOP(b.totalBase)}</s>
-                        {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
-                      </span>
-                      <span className="producto-bundle-ahorro">· Ahorras {formatCOP(b.ahorro)}</span>
-                      <button
-                        className="producto-bundle-btn"
-                        onClick={() => handleAgregarBundle(2, bundle.bundle_2_tipo, bundle.bundle_2_descuento, `Bundle x2 – ${desc}`)}
-                      >
-                        Agregar 2 al carrito
-                      </button>
-                    </div>
-                  )
-                })()}
-                {bundle.bundle_3_activo && (() => {
-                  const b = calcularBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
-                  const desc = bundle.bundle_3_tipo === 'porcentaje' ? `${bundle.bundle_3_descuento}% dto.` : `${formatCOP(bundle.bundle_3_descuento)} dto.`
-                  return (
-                    <div className="producto-bundle-tier">
-                      <span className="producto-bundle-tag">🏷️ Lleva 3</span>
-                      <span className="producto-bundle-precios">
-                        <s>{formatCOP(b.totalBase)}</s>
-                        {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
-                      </span>
-                      <span className="producto-bundle-ahorro">· Ahorras {formatCOP(b.ahorro)}</span>
-                      <button
-                        className="producto-bundle-btn"
-                        onClick={() => handleAgregarBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento, `Bundle x3 – ${desc}`)}
-                      >
-                        Agregar 3 al carrito
-                      </button>
-                    </div>
-                  )
-                })()}
+            {esAccesorio && bundle && (bundle.bundle_2_activo || bundle.bundle_3_activo) && !agotado && (
+              <div className="producto-bundle-section">
+                <div className="bundle-divider">
+                  <div className="bundle-divider-line" />
+                  <span>El segundo al mejor precio</span>
+                  <div className="bundle-divider-line" />
+                </div>
+
+                <div className="bundle-opciones">
+                  {/* Opción 1 — normal */}
+                  <button
+                    className={`bundle-opcion ${bundleOpcion === 1 ? 'active' : ''}`}
+                    onClick={() => { setBundleOpcion(1); setBundleExtraVariante(null) }}
+                  >
+                    <span className="bundle-radio" />
+                    <span className="bundle-opcion-titulo">1 unidad</span>
+                    <span className="bundle-opcion-precio-normal">{formatCOP(precioMostrado)}</span>
+                  </button>
+
+                  {/* Opción 2 */}
+                  {bundle.bundle_2_activo && (() => {
+                    const esMisma = !bundleExtraVariante || bundleExtraVariante.id === (varianteActiva?.id ?? null)
+                    const tipo = esMisma ? bundle.bundle_2_tipo : 'valor'
+                    const descuento = esMisma ? bundle.bundle_2_descuento : (categoriaBundle?.bundle_descuento_x2 ?? 0)
+                    const b = calcularBundleOpcion(2, tipo, descuento)
+                    return (
+                      <div key="b2" className="bundle-opcion-group">
+                        <button
+                          className={`bundle-opcion ${bundleOpcion === 2 ? 'active' : ''}`}
+                          onClick={() => setBundleOpcion(2)}
+                        >
+                          <span className="bundle-radio" />
+                          <div className="bundle-opcion-body">
+                            <span className="bundle-opcion-titulo">2 unidades</span>
+                            <div className="bundle-opcion-precios">
+                              <s>{formatCOP(b.totalBase)}</s>
+                              {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                            </div>
+                          </div>
+                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(b.ahorro)}</span>
+                        </button>
+
+                        {bundleOpcion === 2 && (
+                          <div className="bundle-expandido">
+                            <p className="bundle-cada-uno">Cada uno a {formatCOP(b.precioUnitario)}</p>
+                            {variantes.length > 1 && (
+                              <div className="bundle-variante-wrap">
+                                <p className="bundle-variante-label">Segunda unidad:</p>
+                                <div className="bundle-variante-chips">
+                                  {variantes.map((v) => {
+                                    const lbl = [v.modelo_compatible, v.color].filter(Boolean).join(' · ') || 'Estándar'
+                                    const isSel = bundleExtraVariante ? bundleExtraVariante.id === v.id : v.id === varianteActiva?.id
+                                    return (
+                                      <button
+                                        key={v.id}
+                                        className={`bundle-var-chip ${isSel ? 'active' : ''}`}
+                                        onClick={() => setBundleExtraVariante(v.id === varianteActiva?.id ? null : v)}
+                                      >
+                                        {lbl}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                                {!esMisma && categoriaBundle && b.ahorro > 0 && (
+                                  <p className="bundle-mixto-nota">Descuento aplicado por llevar 2 accesorios</p>
+                                )}
+                              </div>
+                            )}
+                            <button
+                              className="bundle-cta-btn"
+                              onClick={() => handleAgregarBundle(2, tipo, descuento, `Bundle x2${!esMisma ? ' mixto' : ''} – Ahorras ${formatCOP(b.ahorro)}`)}
+                            >
+                              Agregar 2 al carrito →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {/* Opción 3 */}
+                  {bundle.bundle_3_activo && (() => {
+                    const b = calcularBundleOpcion(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
+                    return (
+                      <div key="b3" className="bundle-opcion-group">
+                        <button
+                          className={`bundle-opcion ${bundleOpcion === 3 ? 'active' : ''}`}
+                          onClick={() => setBundleOpcion(3)}
+                        >
+                          <span className="bundle-radio" />
+                          <div className="bundle-opcion-body">
+                            <span className="bundle-opcion-titulo">3 unidades</span>
+                            <div className="bundle-opcion-precios">
+                              <s>{formatCOP(b.totalBase)}</s>
+                              {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                            </div>
+                          </div>
+                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(b.ahorro)}</span>
+                        </button>
+
+                        {bundleOpcion === 3 && (
+                          <div className="bundle-expandido">
+                            <p className="bundle-cada-uno">Cada uno a {formatCOP(b.precioUnitario)}</p>
+                            <button
+                              className="bundle-cta-btn"
+                              onClick={() => handleAgregarBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento, `Bundle x3 – Ahorras ${formatCOP(b.ahorro)}`)}
+                            >
+                              Agregar 3 al carrito →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </div>
               </div>
             )}
 

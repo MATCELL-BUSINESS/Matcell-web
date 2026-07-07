@@ -211,6 +211,28 @@ export async function getAccesoriosSugeridos(excludeIds, limit = 4) {
     }))
 }
 
+export async function getCategoriaBundle(categoriaId) {
+  const { data, error } = await supabase
+    .from('categorias')
+    .select('id, nombre, bundle_descuento_x2, bundle_descuento_x3')
+    .eq('id', categoriaId)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
+export async function getCategoriasBundleParaCarrito(categoriaIds) {
+  if (!categoriaIds.length) return {}
+  const { data, error } = await supabase
+    .from('categorias')
+    .select('id, nombre, bundle_descuento_x2, bundle_descuento_x3')
+    .in('id', categoriaIds)
+  if (error) throw error
+  const mapa = {}
+  for (const c of data ?? []) mapa[c.id] = c
+  return mapa
+}
+
 export async function getBundleProducto(productoId) {
   const { data, error } = await supabase
     .from('bundles')
