@@ -211,6 +211,21 @@ export async function getAccesoriosSugeridos(excludeIds, limit = 4) {
     }))
 }
 
+export async function getBundlesParaCarrito(productoIds) {
+  if (!productoIds.length) return {}
+  const { data, error } = await supabase
+    .from('bundles')
+    .select(
+      'producto_id, bundle_2_activo, bundle_2_tipo, bundle_2_descuento, bundle_3_activo, bundle_3_tipo, bundle_3_descuento'
+    )
+    .in('producto_id', productoIds)
+    .eq('activo', true)
+  if (error) throw error
+  const mapa = {}
+  for (const b of data ?? []) mapa[b.producto_id] = b
+  return mapa
+}
+
 export async function getEnvioNacional() {
   const { data, error } = await supabase
     .from('config_envios')
@@ -316,6 +331,8 @@ export async function crearPedido({
     nombre_producto: item.color ? `${item.nombre} (${item.color})` : item.nombre,
     cantidad: item.cantidad,
     precio_unitario: item.precio,
+    es_bundle: item.esBundle ?? false,
+    bundle_descripcion: item.bundleDescripcion ?? null,
   }))
 
   const { error: errorItems } = await supabase.from('pedido_items').insert(filasItems)

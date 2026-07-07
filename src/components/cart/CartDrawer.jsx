@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag } from 'react-icons/fi'
+import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiTag } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
-import { getEnvioNacional, getAccesoriosSugeridos } from '../../lib/api'
+import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito } from '../../lib/api'
 import { formatCOP } from '../../lib/format'
 import ShippingProgress from './ShippingProgress'
 import './CartDrawer.css'
 
+function calcularPrecioBundle(precioBase, tipo, descuento) {
+  if (tipo === 'porcentaje') return Math.round(precioBase * (1 - descuento / 100))
+  return Math.max(0, Math.round(precioBase - descuento))
+}
+
 export default function CartDrawer() {
-  const { items, removeItem, updateCantidad, subtotal, drawerOpen, closeDrawer, addItem } =
+  const { items, removeItem, updateCantidad, applyBundle, subtotal, drawerOpen, closeDrawer, addItem } =
     useCart()
   const navigate = useNavigate()
 
   const [envio, setEnvio] = useState(null)
   const [sugeridos, setSugeridos] = useState([])
+  const [bundles, setBundles] = useState({})
 
   useEffect(() => {
     getEnvioNacional().then(setEnvio).catch(console.error)
@@ -23,6 +29,7 @@ export default function CartDrawer() {
     if (!drawerOpen) return
     const idsEnCarrito = items.map((item) => item.productoId)
     getAccesoriosSugeridos(idsEnCarrito, 3).then(setSugeridos).catch(console.error)
+    getBundlesParaCarrito(idsEnCarrito).then(setBundles).catch(console.error)
   }, [drawerOpen, items])
 
   const handleAgregarSugerido = (producto) => {
@@ -67,48 +74,89 @@ export default function CartDrawer() {
               <ShippingProgress subtotal={subtotal} montoGratis={envio?.gratis_desde_monto} />
 
               <div className="cart-items">
-                {items.map((item) => (
-                  <div key={item.cartItemId} className="cart-item">
-                    <div className="cart-item-image">
-                      {item.foto ? <img src={item.foto} alt={item.nombre} /> : null}
-                    </div>
+                {items.map((item) => {
+                  const bundle = bundles[item.productoId]
+                  const precioBase = item.precioOriginal ?? item.precio
 
-                    <div className="cart-item-info">
-                      <p className="cart-item-name">{item.nombre}</p>
-                      {item.color && <p className="cart-item-color">Color: {item.color}</p>}
-                      <p className="cart-item-price">{formatCOP(item.precio)}</p>
+                  // Determina qué tier de bundle ofrecer
+                  let bundleOferta = null
+                  if (bundle) {
+                    if (bundle.bundle_3_activo && item.cantidad >= 2) {
+                      const precio = calcularPrecioBundle(precioBase, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
+                      const desc = bundle.bundle_3_tipo === 'porcentaje'
+                        ? `${bundle.bundle_3_descuento}% dto.`
+                        : formatCOP(bundle.bundle_3_descuento) + ' menos'
+                      bundleOferta = { cantidad: 3, precio, label: `Lleva 3 y ahorra ${desc} c/u`, descripcion: `Bundle x3 – ${desc}` }
+                    } else if (bundle.bundle_2_activo && item.cantidad < 2) {
+                      const precio = calcularPrecioBundle(precioBase, bundle.bundle_2_tipo, bundle.bundle_2_descuento)
+                      const desc = bundle.bundle_2_tipo === 'porcentaje'
+                        ? `${bundle.bundle_2_descuento}% dto.`
+                        : formatCOP(bundle.bundle_2_descuento) + ' menos'
+                      bundleOferta = { cantidad: 2, precio, label: `Lleva 2 y ahorra ${desc} c/u`, descripcion: `Bundle x2 – ${desc}` }
+                    }
+                  }
 
-                      <div className="cart-item-qty">
+                  return (
+                    <div key={item.cartItemId} className="cart-item-wrap">
+                      <div className="cart-item">
+                        <div className="cart-item-image">
+                          {item.foto ? <img src={item.foto} alt={item.nombre} /> : null}
+                        </div>
+
+                        <div className="cart-item-info">
+                          <p className="cart-item-name">{item.nombre}</p>
+                          {item.color && <p className="cart-item-color">Color: {item.color}</p>}
+                          <p className="cart-item-price">
+                            {formatCOP(item.precio)}
+                            {item.esBundle && item.precioOriginal && item.precioOriginal !== item.precio && (
+                              <span className="cart-item-price-original">{formatCOP(item.precioOriginal)}</span>
+                            )}
+                          </p>
+
+                          <div className="cart-item-qty">
+                            <button
+                              onClick={() => updateCantidad(item.cartItemId, item.cantidad - 1)}
+                              disabled={item.cantidad <= 1}
+                              aria-label="Disminuir cantidad"
+                            >
+                              <FiMinus size={13} />
+                            </button>
+                            <span>{item.cantidad}</span>
+                            <button
+                              onClick={() => updateCantidad(item.cartItemId, item.cantidad + 1)}
+                              disabled={
+                                item.stockDisponible != null &&
+                                item.cantidad >= item.stockDisponible
+                              }
+                              aria-label="Aumentar cantidad"
+                            >
+                              <FiPlus size={13} />
+                            </button>
+                          </div>
+                        </div>
+
                         <button
-                          onClick={() => updateCantidad(item.cartItemId, item.cantidad - 1)}
-                          disabled={item.cantidad <= 1}
-                          aria-label="Disminuir cantidad"
+                          className="cart-item-remove"
+                          onClick={() => removeItem(item.cartItemId)}
+                          aria-label="Eliminar producto"
                         >
-                          <FiMinus size={13} />
-                        </button>
-                        <span>{item.cantidad}</span>
-                        <button
-                          onClick={() => updateCantidad(item.cartItemId, item.cantidad + 1)}
-                          disabled={
-                            item.stockDisponible != null &&
-                            item.cantidad >= item.stockDisponible
-                          }
-                          aria-label="Aumentar cantidad"
-                        >
-                          <FiPlus size={13} />
+                          <FiTrash2 size={16} />
                         </button>
                       </div>
-                    </div>
 
-                    <button
-                      className="cart-item-remove"
-                      onClick={() => removeItem(item.cartItemId)}
-                      aria-label="Eliminar producto"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                  </div>
-                ))}
+                      {bundleOferta && (
+                        <button
+                          className="cart-bundle-oferta"
+                          onClick={() => applyBundle(item.cartItemId, bundleOferta.cantidad, bundleOferta.precio, bundleOferta.descripcion)}
+                        >
+                          <FiTag size={13} />
+                          <span>{bundleOferta.label}</span>
+                          <span className="cart-bundle-precio">{formatCOP(bundleOferta.precio)} c/u</span>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
 
               {sugeridos.length > 0 && (

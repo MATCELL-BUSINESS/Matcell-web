@@ -88,6 +88,22 @@ export function CartProvider({ children }) {
     )
   }
 
+  const applyBundle = (cartItemId, cantidadBundle, precioBundle, descripcion) => {
+    setItems((actuales) =>
+      actuales.map((item) => {
+        if (item.cartItemId !== cartItemId) return item
+        return {
+          ...item,
+          cantidad: cantidadBundle,
+          precio: precioBundle,
+          esBundle: true,
+          bundleDescripcion: descripcion,
+          precioOriginal: item.precioOriginal ?? item.precio,
+        }
+      })
+    )
+  }
+
   const clearCart = () => setItems([])
 
   const subtotal = useMemo(
@@ -106,6 +122,7 @@ export function CartProvider({ children }) {
     addItemSilent,
     removeItem,
     updateCantidad,
+    applyBundle,
     clearCart,
     subtotal,
     cantidadTotal,
