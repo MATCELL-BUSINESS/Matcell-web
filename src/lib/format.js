@@ -14,6 +14,11 @@ export function formatFechaCorta(date) {
   }).format(date)
 }
 
+export function formatVariante(text) {
+  if (!text) return text
+  return text.replace(/iphone/gi, 'iPhone')
+}
+
 export function sumarDias(fecha, dias) {
   const resultado = new Date(fecha)
   resultado.setDate(resultado.getDate() + dias)

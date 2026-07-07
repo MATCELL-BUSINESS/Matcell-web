@@ -21,7 +21,7 @@ import {
   getBundleProducto,
   getSubcategoriaBundle,
 } from '../lib/api'
-import { formatCOP } from '../lib/format'
+import { formatCOP, formatVariante } from '../lib/format'
 import { useCart } from '../context/CartContext'
 import Breadcrumbs from '../components/catalogo/Breadcrumbs'
 import ProductGallery from '../components/producto/ProductGallery'
@@ -548,30 +548,33 @@ export default function ProductoDetalle() {
                                         type="button"
                                         key={compat}
                                         className={`bundle-var-chip ${compat === b2Compat ? 'active' : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); setBundle2Compat(compat); setBundle2Color(null) }}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          const cols = variantes.filter((v) => v.modelo_compatible === compat)
+                                          setBundle2Compat(compat)
+                                          setBundle2Color(cols.length === 1 ? cols[0].color : null)
+                                        }}
                                       >
-                                        {compat}
+                                        {formatVariante(compat)}
                                       </button>
                                     ))}
                                   </div>
                                 )}
-                                <div className="bundle-variante-chips">
-                                  {coloresParaB2.map((v) => {
-                                    const foto = fotoDeColor(v.color)
-                                    const isSel = v.color === b2Color && (!hasMultipleCompats || v.modelo_compatible === b2Compat)
-                                    return (
-                                      <button
-                                        type="button"
-                                        key={v.id}
-                                        className={`bundle-var-chip ${isSel ? 'active' : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); setBundle2Color(v.color) }}
-                                      >
-                                        {foto && <img src={foto} alt={v.color} className="bundle-var-chip-img" />}
-                                        {v.color}
-                                      </button>
-                                    )
-                                  })}
-                                </div>
+                                {coloresParaB2.length === 1 ? (
+                                  <p className="bundle-color-unico">{formatVariante(coloresParaB2[0].color)}</p>
+                                ) : coloresParaB2.length > 1 ? (
+                                  <select
+                                    className="bundle-color-select"
+                                    value={b2Color ?? ''}
+                                    onChange={(e) => setBundle2Color(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="" disabled>Selecciona un color</option>
+                                    {coloresParaB2.map((v) => (
+                                      <option key={v.id} value={v.color}>{formatVariante(v.color)}</option>
+                                    ))}
+                                  </select>
+                                ) : null}
                                 {!esMismaX2 && subcategoriaBundle && bX2.ahorro > 0 && (
                                   <p className="bundle-mixto-nota">Descuento por llevar 2 accesorios de la misma subcategoría</p>
                                 )}
@@ -631,30 +634,33 @@ export default function ProductoDetalle() {
                                         type="button"
                                         key={compat}
                                         className={`bundle-var-chip ${compat === b3Compat ? 'active' : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); setBundle3Compat(compat); setBundle3Color(null) }}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          const cols = variantes.filter((v) => v.modelo_compatible === compat)
+                                          setBundle3Compat(compat)
+                                          setBundle3Color(cols.length === 1 ? cols[0].color : null)
+                                        }}
                                       >
-                                        {compat}
+                                        {formatVariante(compat)}
                                       </button>
                                     ))}
                                   </div>
                                 )}
-                                <div className="bundle-variante-chips">
-                                  {coloresParaB3.map((v) => {
-                                    const foto = fotoDeColor(v.color)
-                                    const isSel = v.color === b3Color && (!hasMultipleCompats || v.modelo_compatible === b3Compat)
-                                    return (
-                                      <button
-                                        type="button"
-                                        key={v.id}
-                                        className={`bundle-var-chip ${isSel ? 'active' : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); setBundle3Color(v.color) }}
-                                      >
-                                        {foto && <img src={foto} alt={v.color} className="bundle-var-chip-img" />}
-                                        {v.color}
-                                      </button>
-                                    )
-                                  })}
-                                </div>
+                                {coloresParaB3.length === 1 ? (
+                                  <p className="bundle-color-unico">{formatVariante(coloresParaB3[0].color)}</p>
+                                ) : coloresParaB3.length > 1 ? (
+                                  <select
+                                    className="bundle-color-select"
+                                    value={b3Color ?? ''}
+                                    onChange={(e) => setBundle3Color(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <option value="" disabled>Selecciona un color</option>
+                                    {coloresParaB3.map((v) => (
+                                      <option key={v.id} value={v.color}>{formatVariante(v.color)}</option>
+                                    ))}
+                                  </select>
+                                ) : null}
                                 {!esMismaX3 && subcategoriaBundle && bX3.ahorro > 0 && (
                                   <p className="bundle-mixto-nota">Descuento por llevar 3 accesorios de la misma subcategoría</p>
                                 )}

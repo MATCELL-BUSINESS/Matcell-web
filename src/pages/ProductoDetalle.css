@@ -699,9 +699,9 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 16px;
-  border: 1px solid #ddd;
+  border: 1.5px solid #E0E0E0;
   background: #fff;
-  color: #444;
+  color: #333333;
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s, color 0.12s;
 }
@@ -710,6 +710,34 @@
   border-color: #FF2D00;
   background: #FF2D00;
   color: #fff;
+}
+
+.bundle-color-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid #E0E0E0;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-principal);
+  cursor: pointer;
+  outline: none;
+  appearance: auto;
+  transition: border-color 0.12s;
+}
+
+.bundle-color-select:focus {
+  border-color: #FF2D00;
+}
+
+.bundle-color-unico {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  padding: 6px 0;
 }
 
 .bundle-mixto-nota {

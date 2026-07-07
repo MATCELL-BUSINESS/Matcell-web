@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiTag } from 'react-icons/fi'
 import { useCart } from '../../context/CartContext'
 import { getEnvioNacional, getAccesoriosSugeridos, getBundlesParaCarrito, getSubcategoriasBundleParaCarrito } from '../../lib/api'
-import { formatCOP } from '../../lib/format'
+import { formatCOP, formatVariante } from '../../lib/format'
 import ShippingProgress from './ShippingProgress'
 import './CartDrawer.css'
 
@@ -169,7 +169,7 @@ export default function CartDrawer() {
 
                         <div className="cart-item-info">
                           <p className="cart-item-name">{item.nombre}</p>
-                          {item.color && <p className="cart-item-color">Color: {item.color}</p>}
+                          {item.color && <p className="cart-item-color">Color: {formatVariante(item.color)}</p>}
                           <p className="cart-item-price">
                             {formatCOP(item.precio)}
                             {item.esBundle && item.precioOriginal && item.precioOriginal !== item.precio && (
