@@ -1,3 +1,9 @@
+@keyframes sticky-bounce {
+  0%, 100% { transform: translateY(0); }
+  40%       { transform: translateY(-6px); }
+  60%       { transform: translateY(-3px); }
+}
+
 .sticky-buy-bar {
   position: fixed;
   bottom: 0;
@@ -12,10 +18,21 @@
   justify-content: space-between;
   gap: 16px;
   padding: 12px 24px;
+
+  /* hidden by default */
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+
+.sticky-buy-bar--visible {
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .sticky-buy-info {
   min-width: 0;
+  flex: 1;
 }
 
 .sticky-buy-name {
@@ -34,9 +51,35 @@
   margin: 2px 0 0;
 }
 
-.sticky-buy-bar .btn {
+.sticky-buy-actions {
+  display: flex;
+  gap: 10px;
   flex-shrink: 0;
-  padding: 11px 22px;
+}
+
+.sticky-btn-cart {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sticky-btn-buy {
+  padding: 10px 20px;
+  animation: sticky-bounce 4s ease-in-out infinite;
+}
+
+/* en desktop: barra más compacta alineada a la derecha */
+@media (min-width: 900px) {
+  .sticky-buy-bar {
+    left: auto;
+    right: 32px;
+    bottom: 32px;
+    border-radius: 16px;
+    border: 1px solid #eee;
+    max-width: 480px;
+    padding: 14px 20px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -45,6 +88,14 @@
   }
 
   .sticky-buy-name {
-    max-width: 140px;
+    max-width: 130px;
+  }
+
+  .sticky-btn-label {
+    display: none;
+  }
+
+  .sticky-btn-cart {
+    padding: 10px 12px;
   }
 }

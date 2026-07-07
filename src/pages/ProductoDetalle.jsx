@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { FaWhatsapp } from 'react-icons/fa'
 import {
@@ -8,6 +8,10 @@ import {
   FiCreditCard,
   FiCheckCircle,
   FiShoppingCart,
+  FiShare2,
+  FiStar,
+  FiCopy,
+  FiX,
 } from 'react-icons/fi'
 import {
   getProductoById,
@@ -54,6 +58,9 @@ export default function ProductoDetalle() {
   const [accesorios, setAccesorios] = useState([])
   const [reviewsData, setReviewsData] = useState({ resenas: [], esEspecifica: false })
   const [asesorModalOpen, setAsesorModalOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+  const ctasRef = useRef(null)
 
   useEffect(() => {
     setCargando(true)
@@ -158,6 +165,28 @@ export default function ProductoDetalle() {
   const mensajeSimple = `Hola, tengo dudas sobre el ${producto.nombre}. ¿Me pueden ayudar?`
   const whatsappSimpleHref = `https://wa.me/${whatsapp}?text=${encodeURIComponent(mensajeSimple)}`
 
+  const promedio = reviewsData.resenas.length > 0
+    ? reviewsData.resenas.reduce((s, r) => s + r.calificacion, 0) / reviewsData.resenas.length
+    : 0
+
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      try { await navigator.share({ title: producto.nombre, url }) } catch (_) {}
+      return
+    }
+    setShareOpen((o) => !o)
+  }
+
+  const handleCopiarLink = () => {
+    navigator.clipboard.writeText(window.location.href)
+    setCopiado(true)
+    setShareOpen(false)
+    setTimeout(() => setCopiado(false), 2000)
+  }
+
+  const waShareHref = `https://wa.me/?text=${encodeURIComponent(`Mira este producto en MatCell: ${window.location.href}`)}`
+
   const handleSeleccionarCapacidad = (capacidad) => {
     setCapacidadSeleccionada(capacidad)
     const colores = variantes.filter((v) => v.almacenamiento === capacidad)
@@ -230,7 +259,38 @@ export default function ProductoDetalle() {
             <WishlistHeart productoId={producto.id} />
           </div>
 
-          <h1>{producto.nombre}</h1>
+          <div className="producto-title-row">
+            <h1>{producto.nombre}</h1>
+            <div className="producto-share-wrap">
+              <button className="producto-share-btn" onClick={handleShare} aria-label="Compartir">
+                <FiShare2 size={18} />
+              </button>
+              {shareOpen && (
+                <div className="producto-share-menu">
+                  <a href={waShareHref} target="_blank" rel="noopener noreferrer" className="share-option">
+                    <FaWhatsapp size={16} /> WhatsApp
+                  </a>
+                  <button className="share-option" onClick={handleCopiarLink}>
+                    <FiCopy size={16} /> Copiar link
+                  </button>
+                </div>
+              )}
+              {copiado && <span className="share-copiado">¡Link copiado!</span>}
+            </div>
+          </div>
+
+          {promedio > 0 && (
+            <button
+              className="producto-rating-row"
+              onClick={() => document.querySelector('.product-reviews')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              {Array.from({ length: 5 }).map((_, i) => (
+                <FiStar key={i} size={14} fill={i < Math.round(promedio) ? 'currentColor' : 'none'} />
+              ))}
+              <span className="rating-num">{promedio.toFixed(1)}</span>
+              <span className="rating-count">({reviewsData.resenas.length} reseñas)</span>
+            </button>
+          )}
 
           <div className="producto-price">
             <span className="price-current">{formatCOP(precioMostrado)}</span>
@@ -354,7 +414,7 @@ export default function ProductoDetalle() {
             </div>
           )}
 
-          <div className="producto-ctas">
+          <div className="producto-ctas" ref={ctasRef}>
             <button
               className="btn btn-primary producto-cta"
               onClick={handleAgregarAlCarrito}
@@ -379,7 +439,7 @@ export default function ProductoDetalle() {
               className="btn btn-secondary producto-cta-simple"
             >
               <FaWhatsapp size={18} />
-              ¿Dudas sobre este equipo? Escríbenos
+              {esAccesorio ? '¿Tienes dudas sobre este producto? Escríbenos' : '¿Dudas sobre este equipo? Escríbenos'}
             </a>
 
             <button
@@ -388,6 +448,21 @@ export default function ProductoDetalle() {
             >
               Finalizar compra con un asesor
             </button>
+          </div>
+
+          {/* Métodos de pago */}
+          <div className="producto-metodos-pago">
+            <span className="pago-label"><FiShield size={13} /> Pago 100% seguro con</span>
+            <div className="pago-logos">
+              <span className="pago-logo pago-visa">VISA</span>
+              <span className="pago-logo pago-mc">
+                <span className="mc-circle mc-red" />
+                <span className="mc-circle mc-orange" />
+              </span>
+              <span className="pago-logo pago-pse">PSE</span>
+              <span className="pago-logo pago-nequi">nequi</span>
+              <span className="pago-logo pago-bcol">Bancolombia</span>
+            </div>
           </div>
 
           <div className="producto-pago-seguro">
@@ -430,6 +505,8 @@ export default function ProductoDetalle() {
         precio={precioMostrado}
         agotado={agotado}
         onAddToCart={handleAgregarAlCarrito}
+        onBuyNow={handleComprarAhora}
+        ctaRef={ctasRef}
       />
 
       {asesorModalOpen && (
