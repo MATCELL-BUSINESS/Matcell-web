@@ -47,7 +47,7 @@ const SPECS_LABELS = [
 
 export default function ProductoDetalle() {
   const { id } = useParams()
-  const { addItem, addItemSilent, addItemBundle } = useCart()
+  const { addItem, addItemSilent, addItemBundle, addItemBundleSilent, openDrawer } = useCart()
   const { whatsapp } = useTiendaConfig()
   const navigate = useNavigate()
 
@@ -63,9 +63,13 @@ export default function ProductoDetalle() {
   const [shareOpen, setShareOpen] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [bundle, setBundle] = useState(null)
-  const [subsubcategoriaBundle, setSubcategoriaBundle] = useState(null)
+  const [subcategoriaBundle, setSubcategoriaBundle] = useState(null)
   const [bundleOpcion, setBundleOpcion] = useState(1)
-  const [bundleExtraVariante, setBundleExtraVariante] = useState(null)
+  const [bundle2Compat, setBundle2Compat] = useState(null)
+  const [bundle2Color, setBundle2Color] = useState(null)
+  const [bundle3Compat, setBundle3Compat] = useState(null)
+  const [bundle3Color, setBundle3Color] = useState(null)
+  const [bundleCantidadPlus, setBundleCantidadPlus] = useState(4)
   const ctasRef = useRef(null)
 
   useEffect(() => {
@@ -453,123 +457,253 @@ export default function ProductoDetalle() {
               {agotado ? 'Agotado' : 'Agregar al carrito'}
             </button>
 
-            {esAccesorio && bundle && (bundle.bundle_2_activo || bundle.bundle_3_activo) && !agotado && (
-              <div className="producto-bundle-section">
-                <div className="bundle-divider">
-                  <div className="bundle-divider-line" />
-                  <span>El segundo al mejor precio</span>
-                  <div className="bundle-divider-line" />
-                </div>
+            {esAccesorio && bundle && (bundle.bundle_2_activo || bundle.bundle_3_activo) && !agotado && (() => {
+              const compatsAll = [...new Set(variantes.map((v) => v.modelo_compatible).filter(Boolean))]
+              const hasMultipleCompats = compatsAll.length > 1
 
-                <div className="bundle-opciones">
-                  {/* Opción 1 — normal */}
-                  <button
-                    className={`bundle-opcion ${bundleOpcion === 1 ? 'active' : ''}`}
-                    onClick={() => { setBundleOpcion(1); setBundleExtraVariante(null) }}
-                  >
-                    <span className="bundle-radio" />
-                    <span className="bundle-opcion-titulo">1 unidad</span>
-                    <span className="bundle-opcion-precio-normal">{formatCOP(precioMostrado)}</span>
-                  </button>
+              // ── helpers para selector de 2ª unidad ──
+              const b2Compat = bundle2Compat ?? compatibilidadSeleccionada
+              const b2Color  = bundle2Color  ?? colorSeleccionado
+              const coloresParaB2 = hasMultipleCompats && b2Compat
+                ? variantes.filter((v) => v.modelo_compatible === b2Compat)
+                : variantes
+              const b2Variante = variantes.find((v) =>
+                hasMultipleCompats
+                  ? v.modelo_compatible === b2Compat && v.color === b2Color
+                  : v.color === b2Color
+              )
+              const esMismaX2 = b2Variante?.id === varianteActiva?.id
+              const tipoX2     = esMismaX2 ? bundle.bundle_2_tipo : 'valor'
+              const descX2     = esMismaX2 ? bundle.bundle_2_descuento : (subcategoriaBundle?.bundle_descuento_x2 ?? 0)
+              const bX2        = calcularBundleOpcion(2, tipoX2, descX2)
 
-                  {/* Opción 2 */}
-                  {bundle.bundle_2_activo && (() => {
-                    const esMisma = !bundleExtraVariante || bundleExtraVariante.id === (varianteActiva?.id ?? null)
-                    const tipo = esMisma ? bundle.bundle_2_tipo : 'valor'
-                    const descuento = esMisma ? bundle.bundle_2_descuento : (subcategoriaBundle?.bundle_descuento_x2 ?? 0)
-                    const b = calcularBundleOpcion(2, tipo, descuento)
-                    return (
-                      <div key="b2" className="bundle-opcion-group">
+              // ── helpers para selector de 3ª unidad ──
+              const b3Compat = bundle3Compat ?? compatibilidadSeleccionada
+              const b3Color  = bundle3Color  ?? colorSeleccionado
+              const coloresParaB3 = hasMultipleCompats && b3Compat
+                ? variantes.filter((v) => v.modelo_compatible === b3Compat)
+                : variantes
+              const b3Variante = variantes.find((v) =>
+                hasMultipleCompats
+                  ? v.modelo_compatible === b3Compat && v.color === b3Color
+                  : v.color === b3Color
+              )
+              const esMismaX3 = b3Variante?.id === varianteActiva?.id
+              const tipoX3     = esMismaX3 ? bundle.bundle_3_tipo : 'valor'
+              const descX3     = esMismaX3 ? bundle.bundle_3_descuento : (subcategoriaBundle?.bundle_descuento_x3 ?? 0)
+              const bX3        = bundle.bundle_3_activo ? calcularBundleOpcion(3, tipoX3, descX3) : null
+
+              const fotoDeColor = (color) =>
+                (producto.fotos ?? []).find((f) => f.color === color)?.url ?? null
+
+              return (
+                <div className="producto-bundle-section">
+                  <div className="bundle-divider">
+                    <div className="bundle-divider-line" />
+                    <span>El segundo al mejor precio</span>
+                    <div className="bundle-divider-line" />
+                  </div>
+
+                  <div className="bundle-opciones">
+                    {/* Opción 1 */}
+                    <button
+                      type="button"
+                      className={`bundle-opcion ${bundleOpcion === 1 ? 'active' : ''}`}
+                      onClick={() => { setBundleOpcion(1); setBundle2Compat(null); setBundle2Color(null); setBundle3Compat(null); setBundle3Color(null) }}
+                    >
+                      <span className="bundle-radio" />
+                      <span className="bundle-opcion-titulo">1 unidad</span>
+                      <span className="bundle-opcion-precio-normal">{formatCOP(precioMostrado)}</span>
+                    </button>
+
+                    {/* Opción 2 */}
+                    {bundle.bundle_2_activo && (
+                      <div className="bundle-opcion-group">
                         <button
+                          type="button"
                           className={`bundle-opcion ${bundleOpcion === 2 ? 'active' : ''}`}
-                          onClick={() => setBundleOpcion(2)}
+                          onClick={() => { setBundleOpcion(2); setBundle2Compat(null); setBundle2Color(null) }}
                         >
                           <span className="bundle-radio" />
                           <div className="bundle-opcion-body">
                             <span className="bundle-opcion-titulo">2 unidades</span>
                             <div className="bundle-opcion-precios">
-                              <s>{formatCOP(b.totalBase)}</s>
-                              {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                              <s>{formatCOP(bX2.totalBase)}</s>
+                              {' '}<strong>{formatCOP(bX2.totalConDesc)}</strong>
                             </div>
                           </div>
-                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(b.ahorro)}</span>
+                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(bX2.ahorro)}</span>
                         </button>
 
                         {bundleOpcion === 2 && (
                           <div className="bundle-expandido">
-                            <p className="bundle-cada-uno">Cada uno a {formatCOP(b.precioUnitario)}</p>
+                            <p className="bundle-cada-uno">Cada uno a {formatCOP(bX2.precioUnitario)}</p>
                             {variantes.length > 1 && (
                               <div className="bundle-variante-wrap">
                                 <p className="bundle-variante-label">Segunda unidad:</p>
+                                {hasMultipleCompats && (
+                                  <div className="bundle-variante-chips">
+                                    {compatsAll.map((compat) => (
+                                      <button
+                                        type="button"
+                                        key={compat}
+                                        className={`bundle-var-chip ${compat === b2Compat ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setBundle2Compat(compat); setBundle2Color(null) }}
+                                      >
+                                        {compat}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                                 <div className="bundle-variante-chips">
-                                  {variantes.map((v) => {
-                                    const lbl = [v.modelo_compatible, v.color].filter(Boolean).join(' · ') || 'Estándar'
-                                    const isSel = bundleExtraVariante ? bundleExtraVariante.id === v.id : v.id === varianteActiva?.id
+                                  {coloresParaB2.map((v) => {
+                                    const foto = fotoDeColor(v.color)
+                                    const isSel = v.color === b2Color && (!hasMultipleCompats || v.modelo_compatible === b2Compat)
                                     return (
                                       <button
+                                        type="button"
                                         key={v.id}
                                         className={`bundle-var-chip ${isSel ? 'active' : ''}`}
-                                        onClick={() => setBundleExtraVariante(v.id === varianteActiva?.id ? null : v)}
+                                        onClick={(e) => { e.stopPropagation(); setBundle2Color(v.color) }}
                                       >
-                                        {lbl}
+                                        {foto && <img src={foto} alt={v.color} className="bundle-var-chip-img" />}
+                                        {v.color}
                                       </button>
                                     )
                                   })}
                                 </div>
-                                {!esMisma && subcategoriaBundle && b.ahorro > 0 && (
-                                  <p className="bundle-mixto-nota">Descuento aplicado por llevar 2 accesorios</p>
+                                {!esMismaX2 && subcategoriaBundle && bX2.ahorro > 0 && (
+                                  <p className="bundle-mixto-nota">Descuento por llevar 2 accesorios de la misma subcategoría</p>
                                 )}
                               </div>
                             )}
                             <button
+                              type="button"
                               className="bundle-cta-btn"
-                              onClick={() => handleAgregarBundle(2, tipo, descuento, `Bundle x2${!esMisma ? ' mixto' : ''} – Ahorras ${formatCOP(b.ahorro)}`)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (esMismaX2) {
+                                  handleAgregarBundle(2, tipoX2, descX2, `Bundle x2 mismo modelo – Ahorras ${formatCOP(bX2.ahorro)}`)
+                                } else {
+                                  const b2Label = [b2Compat, b2Color].filter(Boolean).join(' · ')
+                                  const b2Item  = { ...itemParaCarrito, color: b2Label, foto: fotoDeColor(b2Color) || itemParaCarrito.foto }
+                                  addItemBundleSilent(itemParaCarrito, 1, bX2.precioUnitario, `Bundle x2 mixto – Ahorras ${formatCOP(bX2.ahorro)}`)
+                                  addItemBundle(b2Item, 1, bX2.precioUnitario, `Bundle x2 mixto – Ahorras ${formatCOP(bX2.ahorro)}`)
+                                }
+                              }}
                             >
                               Agregar 2 al carrito →
                             </button>
                           </div>
                         )}
                       </div>
-                    )
-                  })()}
+                    )}
 
-                  {/* Opción 3 */}
-                  {bundle.bundle_3_activo && (() => {
-                    const b = calcularBundleOpcion(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
-                    return (
-                      <div key="b3" className="bundle-opcion-group">
+                    {/* Opción 3 */}
+                    {bundle.bundle_3_activo && bX3 && (
+                      <div className="bundle-opcion-group">
                         <button
+                          type="button"
                           className={`bundle-opcion ${bundleOpcion === 3 ? 'active' : ''}`}
-                          onClick={() => setBundleOpcion(3)}
+                          onClick={() => { setBundleOpcion(3); setBundle3Compat(null); setBundle3Color(null) }}
                         >
                           <span className="bundle-radio" />
                           <div className="bundle-opcion-body">
                             <span className="bundle-opcion-titulo">3 unidades</span>
                             <div className="bundle-opcion-precios">
-                              <s>{formatCOP(b.totalBase)}</s>
-                              {' '}<strong>{formatCOP(b.totalConDesc)}</strong>
+                              <s>{formatCOP(bX3.totalBase)}</s>
+                              {' '}<strong>{formatCOP(bX3.totalConDesc)}</strong>
                             </div>
                           </div>
-                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(b.ahorro)}</span>
+                          <span className="bundle-ahorro-badge">Ahorras {formatCOP(bX3.ahorro)}</span>
                         </button>
 
                         {bundleOpcion === 3 && (
                           <div className="bundle-expandido">
-                            <p className="bundle-cada-uno">Cada uno a {formatCOP(b.precioUnitario)}</p>
+                            <p className="bundle-cada-uno">Cada uno a {formatCOP(bX3.precioUnitario)}</p>
+                            {variantes.length > 1 && (
+                              <div className="bundle-variante-wrap">
+                                <p className="bundle-variante-label">Tercera unidad:</p>
+                                {hasMultipleCompats && (
+                                  <div className="bundle-variante-chips">
+                                    {compatsAll.map((compat) => (
+                                      <button
+                                        type="button"
+                                        key={compat}
+                                        className={`bundle-var-chip ${compat === b3Compat ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setBundle3Compat(compat); setBundle3Color(null) }}
+                                      >
+                                        {compat}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="bundle-variante-chips">
+                                  {coloresParaB3.map((v) => {
+                                    const foto = fotoDeColor(v.color)
+                                    const isSel = v.color === b3Color && (!hasMultipleCompats || v.modelo_compatible === b3Compat)
+                                    return (
+                                      <button
+                                        type="button"
+                                        key={v.id}
+                                        className={`bundle-var-chip ${isSel ? 'active' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); setBundle3Color(v.color) }}
+                                      >
+                                        {foto && <img src={foto} alt={v.color} className="bundle-var-chip-img" />}
+                                        {v.color}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                                {!esMismaX3 && subcategoriaBundle && bX3.ahorro > 0 && (
+                                  <p className="bundle-mixto-nota">Descuento por llevar 3 accesorios de la misma subcategoría</p>
+                                )}
+                              </div>
+                            )}
                             <button
+                              type="button"
                               className="bundle-cta-btn"
-                              onClick={() => handleAgregarBundle(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento, `Bundle x3 – Ahorras ${formatCOP(b.ahorro)}`)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAgregarBundle(3, tipoX3, descX3, `Bundle x3 – Ahorras ${formatCOP(bX3.ahorro)}`)
+                              }}
                             >
                               Agregar 3 al carrito →
                             </button>
                           </div>
                         )}
                       </div>
-                    )
-                  })()}
+                    )}
+
+                    {/* Opción 4+ */}
+                    {bundle.bundle_3_activo && bX3 && (() => {
+                      const { precioUnitario: puPlus } = calcularBundleOpcion(3, bundle.bundle_3_tipo, bundle.bundle_3_descuento)
+                      const totalPlus     = puPlus * bundleCantidadPlus
+                      const totalBasePlus = precioMostrado * bundleCantidadPlus
+                      return (
+                        <div className="bundle-plus-wrap">
+                          <p className="bundle-plus-label">¿Quieres más? Elige la cantidad</p>
+                          <div className="bundle-plus-row">
+                            <button type="button" className="bundle-plus-btn" onClick={() => setBundleCantidadPlus((q) => Math.max(4, q - 1))}>−</button>
+                            <span className="bundle-plus-qty">{bundleCantidadPlus} unidades</span>
+                            <button type="button" className="bundle-plus-btn" onClick={() => setBundleCantidadPlus((q) => q + 1)}>+</button>
+                            <span className="bundle-plus-precio">{formatCOP(puPlus)}/u</span>
+                          </div>
+                          <p className="bundle-plus-ahorro">Total {formatCOP(totalPlus)} · Ahorras {formatCOP(totalBasePlus - totalPlus)}</p>
+                          <button
+                            type="button"
+                            className="bundle-cta-btn"
+                            onClick={() => handleAgregarBundle(bundleCantidadPlus, bundle.bundle_3_tipo, bundle.bundle_3_descuento, `Bundle x${bundleCantidadPlus} – precio x3 c/u`)}
+                          >
+                            Agregar {bundleCantidadPlus} al carrito →
+                          </button>
+                        </div>
+                      )
+                    })()}
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             <button
               className="btn producto-cta producto-cta-comprar"
