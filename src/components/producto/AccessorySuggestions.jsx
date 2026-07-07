@@ -4,7 +4,7 @@ import './AccessorySuggestions.css'
 export default function AccessorySuggestions({ productos = [], esAccesorio = false }) {
   if (productos.length === 0) return null
 
-  const titulo = esAccesorio ? 'Completa tu setup' : 'También te puede interesar'
+  const titulo = esAccesorio ? '¡Completa tu setup!' : 'También te puede interesar'
 
   return (
     <section className="accessory-suggestions">
