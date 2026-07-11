@@ -791,6 +791,14 @@
   background: #fafafa;
 }
 
+.bundle-plus-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
 .bundle-plus-label {
   font-size: 12px;
   font-weight: 600;
