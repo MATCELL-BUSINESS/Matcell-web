@@ -560,21 +560,19 @@ export default function ProductoDetalle() {
                                     ))}
                                   </div>
                                 )}
-                                {coloresParaB2.length === 1 ? (
-                                  <p className="bundle-color-unico">{formatVariante(coloresParaB2[0].color)}</p>
-                                ) : coloresParaB2.length > 1 ? (
+                                {coloresParaB2.length > 0 && (
                                   <select
                                     className="bundle-color-select"
                                     value={b2Color ?? ''}
                                     onChange={(e) => setBundle2Color(e.target.value)}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <option value="" disabled>Selecciona un color</option>
+                                    {b2Color == null && <option value="" disabled>Selecciona un color</option>}
                                     {coloresParaB2.map((v) => (
                                       <option key={v.id} value={v.color}>{formatVariante(v.color)}</option>
                                     ))}
                                   </select>
-                                ) : null}
+                                )}
                                 {!esMismaX2 && subcategoriaBundle && bX2.ahorro > 0 && (
                                   <p className="bundle-mixto-nota">Descuento por llevar 2 accesorios de la misma subcategoría</p>
                                 )}
@@ -646,21 +644,19 @@ export default function ProductoDetalle() {
                                     ))}
                                   </div>
                                 )}
-                                {coloresParaB3.length === 1 ? (
-                                  <p className="bundle-color-unico">{formatVariante(coloresParaB3[0].color)}</p>
-                                ) : coloresParaB3.length > 1 ? (
+                                {coloresParaB3.length > 0 && (
                                   <select
                                     className="bundle-color-select"
                                     value={b3Color ?? ''}
                                     onChange={(e) => setBundle3Color(e.target.value)}
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    <option value="" disabled>Selecciona un color</option>
+                                    {b3Color == null && <option value="" disabled>Selecciona un color</option>}
                                     {coloresParaB3.map((v) => (
                                       <option key={v.id} value={v.color}>{formatVariante(v.color)}</option>
                                     ))}
                                   </select>
-                                ) : null}
+                                )}
                                 {!esMismaX3 && subcategoriaBundle && bX3.ahorro > 0 && (
                                   <p className="bundle-mixto-nota">Descuento por llevar 3 accesorios de la misma subcategoría</p>
                                 )}
