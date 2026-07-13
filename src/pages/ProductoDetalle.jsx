@@ -77,27 +77,7 @@ export default function ProductoDetalle() {
       .then((data) => {
         setProducto(data)
 
-        const variantes = data?.producto_variantes ?? []
-        const esAccesorioInit = data?.categorias?.slug === 'accesorios'
-        if (variantes.length > 0) {
-          if (esAccesorioInit) {
-            const compats = [...new Set(variantes.map((v) => v.modelo_compatible).filter(Boolean))]
-            const compatInicial = compats[0] ?? null
-            setCompatibilidadSeleccionada(compatInicial)
-            const coloresInicial = compatInicial
-              ? variantes.filter((v) => v.modelo_compatible === compatInicial)
-              : variantes
-            setColorSeleccionado(coloresInicial[0]?.color ?? null)
-          } else {
-            const capacidades = [...new Set(variantes.map((v) => v.almacenamiento).filter(Boolean))]
-            const capacidadInicial = capacidades.length > 1 ? capacidades[0] : null
-            setCapacidadSeleccionada(capacidadInicial)
-            const coloresInicial = capacidadInicial
-              ? variantes.filter((v) => v.almacenamiento === capacidadInicial)
-              : variantes
-            setColorSeleccionado(coloresInicial[0]?.color ?? null)
-          }
-        }
+        // No preseleccionar ninguna variante al entrar — se muestra foto General
 
         if (data) {
           getAccesoriosSugeridos(data.id).then(setAccesorios).catch(console.error)
@@ -164,10 +144,15 @@ export default function ProductoDetalle() {
   const precioMostrado = varianteActiva?.precio ?? producto.precio
   const stockBajo = stockMostrado > 0 && stockMostrado <= STOCK_BAJO_UMBRAL
   const agotado = stockMostrado === 0 && variantes.length > 0
+  // Requiere que el cliente seleccione una variante antes de agregar al carrito
+  const debeSeleccionar = variantes.length > 0 && !varianteActiva
 
   const fotosColor = (producto.fotos ?? []).filter((f) => f.color === colorSeleccionado)
+  const fotosGeneral = (producto.fotos ?? []).filter((f) => !f.color)
   const fotosGaleria =
-    fotosColor.length > 0 ? fotosColor : (producto.fotos ?? []).filter((f) => !f.color)
+    fotosColor.length > 0 ? fotosColor :
+    fotosGeneral.length > 0 ? fotosGeneral :
+    (producto.fotos ?? [])
 
   const specsDisponibles = SPECS_LABELS.filter(
     ([key]) => producto[key] && !(key === 'almacenamiento' && (tieneCapacidades || esAccesorio))
@@ -216,6 +201,7 @@ export default function ProductoDetalle() {
 
   const itemParaCarrito = {
     productoId: producto.id,
+    varianteId: varianteActiva?.id ?? null,
     nombre: producto.nombre,
     foto: fotosGaleria?.[0]?.url ?? producto.fotos?.[0]?.url ?? null,
     precio: precioMostrado,
@@ -243,12 +229,12 @@ export default function ProductoDetalle() {
   }
 
   const handleAgregarAlCarrito = () => {
-    if (agotado) return
+    if (agotado || debeSeleccionar) return
     addItem(itemParaCarrito)
   }
 
   const handleComprarAhora = () => {
-    if (agotado) return
+    if (agotado || debeSeleccionar) return
     addItemSilent(itemParaCarrito)
     navigate('/checkout')
   }
@@ -448,13 +434,16 @@ export default function ProductoDetalle() {
             <button
               className="btn btn-primary producto-cta"
               onClick={handleAgregarAlCarrito}
-              disabled={agotado}
+              disabled={agotado || debeSeleccionar}
             >
               <FiShoppingCart size={18} />
               {agotado ? 'Agotado' : 'Agregar al carrito'}
             </button>
+            {debeSeleccionar && !agotado && (
+              <p className="producto-selecciona-aviso">Selecciona una opción para continuar</p>
+            )}
 
-            {esAccesorio && bundle && (bundle.bundle_2_activo || bundle.bundle_3_activo) && !agotado && (() => {
+            {esAccesorio && bundle && (bundle.bundle_2_activo || bundle.bundle_3_activo) && !agotado && !debeSeleccionar && (() => {
               const compatsAll = [...new Set(variantes.map((v) => v.modelo_compatible).filter(Boolean))]
               const hasMultipleCompats = compatsAll.length > 1
               const fotoDeColor = (color) => (producto.fotos ?? []).find((f) => f.color === color)?.url ?? null

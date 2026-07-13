@@ -95,13 +95,17 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { error } = await supabase
+    // Solo actualiza si el estado realmente cambia (idempotencia ante eventos duplicados)
+    const { data: pedidoActualizado, error } = await supabase
       .from("pedidos")
       .update({
         estado_pago: nuevoEstadoPago,
         wompi_transaction_id: transaccion.id,
       })
-      .eq("numero_pedido", referencia);
+      .eq("numero_pedido", referencia)
+      .neq("estado_pago", nuevoEstadoPago)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       console.error("Error actualizando pedido tras webhook Wompi:", error);
@@ -109,6 +113,35 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: "No se pudo actualizar el pedido" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    // Descontar stock de variantes solo cuando el pago pasa a 'aprobado' por primera vez
+    if (pedidoActualizado && nuevoEstadoPago === "aprobado") {
+      const { data: items, error: itemsError } = await supabase
+        .from("pedido_items")
+        .select("variante_id, cantidad")
+        .eq("pedido_id", pedidoActualizado.id)
+        .not("variante_id", "is", null);
+
+      if (itemsError) {
+        console.error("Error obteniendo items para descuento de stock:", itemsError);
+      } else {
+        for (const item of items ?? []) {
+          const { data: variante } = await supabase
+            .from("producto_variantes")
+            .select("stock")
+            .eq("id", item.variante_id)
+            .single();
+
+          if (variante) {
+            const nuevoStock = Math.max(0, (variante.stock ?? 0) - item.cantidad);
+            await supabase
+              .from("producto_variantes")
+              .update({ stock: nuevoStock })
+              .eq("id", item.variante_id);
+          }
+        }
+      }
     }
 
     return new Response(

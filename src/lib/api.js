@@ -386,6 +386,7 @@ export async function crearPedido({
   const filasItems = items.map((item) => ({
     pedido_id: pedidoId,
     producto_id: item.productoId,
+    variante_id: item.varianteId ?? null,
     nombre_producto: item.color ? `${item.nombre} (${item.color})` : item.nombre,
     cantidad: item.cantidad,
     precio_unitario: item.precio,

@@ -2,6 +2,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: galleryFadeIn 0.2s ease;
+}
+
+@keyframes galleryFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .gallery-main {

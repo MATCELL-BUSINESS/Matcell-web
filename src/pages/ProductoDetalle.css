@@ -67,6 +67,13 @@
   margin: 0 0 16px;
 }
 
+.producto-selecciona-aviso {
+  font-size: 13px;
+  color: #888;
+  margin: 6px 0 0;
+  text-align: center;
+}
+
 .producto-agotado {
   font-size: 13px;
   font-weight: 600;
