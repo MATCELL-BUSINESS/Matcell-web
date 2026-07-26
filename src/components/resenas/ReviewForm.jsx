@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FiStar } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabaseClient'
 import { crearResena } from '../../lib/api'
 import './ReviewForm.css'
 
@@ -12,11 +13,30 @@ export default function ReviewForm({ productoId = null }) {
   const [calificacion, setCalificacion] = useState(0)
   const [calificacionHover, setCalificacionHover] = useState(0)
   const [comentario, setComentario] = useState('')
+  const [foto, setFoto] = useState(null)
+  const [fotoPreview, setFotoPreview] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [enviada, setEnviada] = useState(false)
   const [error, setError] = useState(null)
+  const fotoInputRef = useRef(null)
 
   const formValido = nombre.trim() && calificacion > 0 && comentario.trim()
+
+  const handleFoto = (e) => {
+    const archivo = e.target.files?.[0]
+    if (!archivo) return
+    if (!['image/jpeg', 'image/png'].includes(archivo.type)) {
+      setError('Solo se aceptan imágenes JPG o PNG.')
+      return
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      setError('La imagen no puede superar 5 MB.')
+      return
+    }
+    setError(null)
+    setFoto(archivo)
+    setFotoPreview(URL.createObjectURL(archivo))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,12 +45,25 @@ export default function ReviewForm({ productoId = null }) {
     setEnviando(true)
     setError(null)
     try {
+      let fotoUrl = null
+      if (foto) {
+        const ext = foto.name.split('.').pop()
+        const ruta = `resenas/${crypto.randomUUID()}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('reseñas')
+          .upload(ruta, foto, { contentType: foto.type, upsert: false })
+        if (uploadError) throw uploadError
+        const { data: urlData } = supabase.storage.from('reseñas').getPublicUrl(ruta)
+        fotoUrl = urlData.publicUrl
+      }
+
       await crearResena({
         productoId,
         nombre: nombre.trim(),
         ciudad: ciudad.trim(),
         calificacion,
         comentario: comentario.trim(),
+        fotoUrl,
       })
       setEnviada(true)
     } catch (err) {
@@ -94,6 +127,33 @@ export default function ReviewForm({ productoId = null }) {
           required
         />
       </label>
+
+      <div className="review-form-foto">
+        <span className="review-form-foto-label">Foto (opcional)</span>
+        {fotoPreview ? (
+          <div className="review-form-foto-preview">
+            <img src={fotoPreview} alt="Vista previa" />
+            <button
+              type="button"
+              className="review-form-foto-quitar"
+              onClick={() => { setFoto(null); setFotoPreview(null); fotoInputRef.current.value = '' }}
+            >
+              Quitar
+            </button>
+          </div>
+        ) : (
+          <label className="review-form-foto-btn">
+            Subir imagen
+            <input
+              ref={fotoInputRef}
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={handleFoto}
+              style={{ display: 'none' }}
+            />
+          </label>
+        )}
+      </div>
 
       {error && <p className="review-form-error">{error}</p>}
 

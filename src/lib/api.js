@@ -165,7 +165,7 @@ export async function getProductoById(id) {
 export async function getResenasProducto(productoId, limit = 6) {
   const { data: especificas, error: errorEspecificas } = await supabase
     .from('resenas')
-    .select('id, nombre_cliente, ciudad, calificacion, comentario, creado_en')
+    .select('id, nombre_cliente, ciudad, calificacion, comentario, foto_url, creado_en')
     .eq('estado', 'aprobada')
     .eq('producto_id', productoId)
     .order('creado_en', { ascending: false })
@@ -320,7 +320,7 @@ export async function getInstagramPosts(limit = 8) {
 export async function getResenasAprobadas(limit = 20) {
   const { data, error } = await supabase
     .from('resenas')
-    .select('id, nombre_cliente, ciudad, calificacion, comentario, creado_en')
+    .select('id, nombre_cliente, ciudad, calificacion, comentario, foto_url, creado_en')
     .eq('estado', 'aprobada')
     .order('creado_en', { ascending: false })
     .limit(limit)
@@ -329,13 +329,14 @@ export async function getResenasAprobadas(limit = 20) {
   return data
 }
 
-export async function crearResena({ productoId, nombre, ciudad, calificacion, comentario }) {
+export async function crearResena({ productoId, nombre, ciudad, calificacion, comentario, fotoUrl }) {
   const { error } = await supabase.from('resenas').insert({
     producto_id: productoId ?? null,
     nombre_cliente: nombre,
     ciudad: ciudad || null,
     calificacion,
     comentario,
+    foto_url: fotoUrl ?? null,
     estado: 'pendiente',
     aprobada: false,
   })

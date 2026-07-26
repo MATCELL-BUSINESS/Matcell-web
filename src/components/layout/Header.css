@@ -20,7 +20,7 @@
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee-scroll 28s linear infinite;
+  animation: marquee-scroll 14s linear infinite;
 }
 
 .marquee-track span {
@@ -174,7 +174,15 @@
     display: none;
   }
 
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+  }
+
   .main-nav {
+    z-index: 100;
     position: fixed;
     top: 0;
     left: 0;

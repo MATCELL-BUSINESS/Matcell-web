@@ -60,6 +60,9 @@ export default function Header() {
           MAT<span>CELL</span>
         </Link>
 
+        {menuOpen && (
+          <div className="nav-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+        )}
         <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
           <ul>
             {NAV_LINKS.map((link) =>

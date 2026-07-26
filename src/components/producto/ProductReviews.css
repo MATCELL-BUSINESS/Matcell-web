@@ -102,6 +102,16 @@
   flex-direction: column;
 }
 
+.review-card-foto {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
 .review-card--empty {
   background: transparent;
   border: none;
