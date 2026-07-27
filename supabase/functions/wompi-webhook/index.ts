@@ -144,6 +144,63 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Notificación WhatsApp vía CallMeBot — fire and forget
+    if (pedidoActualizado && nuevoEstadoPago === "aprobado") {
+      const enviarNotificacion = async () => {
+        try {
+          const apiKey = Deno.env.get("CALLMEBOT_API_KEY");
+          const numero = Deno.env.get("MATCELL_WHATSAPP");
+          if (!apiKey || !numero) return;
+
+          const [{ data: pedido }, { data: items }] = await Promise.all([
+            supabase
+              .from("pedidos")
+              .select("numero_pedido, total, cliente_nombre, cliente_telefono, direccion, ciudad, metodo_envio")
+              .eq("numero_pedido", referencia)
+              .single(),
+            supabase
+              .from("pedido_items")
+              .select("nombre_producto, cantidad")
+              .eq("pedido_id", pedidoActualizado.id),
+          ]);
+
+          if (!pedido) return;
+
+          const totalFmt = new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            maximumFractionDigits: 0,
+          }).format(pedido.total);
+
+          const envioLabel = pedido.metodo_envio === "recogida_local"
+            ? "Recogida en local"
+            : "Nacional";
+
+          const productosLineas = (items ?? [])
+            .map((i: { nombre_producto: string; cantidad: number }) => `  • ${i.nombre_producto} x${i.cantidad}`)
+            .join("\n");
+
+          const mensaje = encodeURIComponent(
+            `🛍️ Nuevo pedido MatCell\n\n` +
+            `📦 Pedido: ${pedido.numero_pedido}\n` +
+            `👤 Cliente: ${pedido.cliente_nombre ?? ""}\n` +
+            `📱 Teléfono: ${pedido.cliente_telefono ?? ""}\n` +
+            `📍 Dirección: ${pedido.direccion ?? ""}, ${pedido.ciudad ?? ""}\n` +
+            `🛒 Productos:\n${productosLineas}\n` +
+            `💰 Total: ${totalFmt}\n` +
+            `🚚 Envío: ${envioLabel}`
+          );
+
+          await fetch(
+            `https://api.callmebot.com/whatsapp.php?phone=${numero}&text=${mensaje}&apikey=${apiKey}`
+          );
+        } catch (e) {
+          console.error("Error enviando notificación WhatsApp:", e);
+        }
+      };
+      enviarNotificacion();
+    }
+
     return new Response(
       JSON.stringify({ recibido: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
