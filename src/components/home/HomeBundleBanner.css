@@ -1,0 +1,116 @@
+.home-bundle-banner {
+  max-width: 1100px;
+  margin: 0 auto 32px;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hbb-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #FF2D00;
+}
+
+.hbb-titulo {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-negro);
+}
+
+.hbb-subtitulo {
+  font-size: 13px;
+  color: #777;
+  margin: 0;
+}
+
+.hbb-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hbb-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  background: #fff;
+}
+
+.hbb-card--popular {
+  border: 2px solid #FF2D00;
+  padding-top: 28px;
+}
+
+.hbb-popular-badge {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FF2D00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 0 0 8px 8px;
+  white-space: nowrap;
+}
+
+.hbb-card-qty {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-negro, #111);
+  margin: 0;
+}
+
+.hbb-card-precio {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+}
+
+.hbb-por-unidad {
+  font-size: 11px;
+  color: #999;
+}
+
+.hbb-cta {
+  width: 100%;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.hbb-cta:hover {
+  background: #333;
+}
+
+@media (max-width: 600px) {
+  .hbb-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .home-bundle-banner {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}

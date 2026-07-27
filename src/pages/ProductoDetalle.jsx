@@ -12,6 +12,7 @@ import {
   FiStar,
   FiCopy,
   FiX,
+  FiZap,
 } from 'react-icons/fi'
 import {
   getProductoById,
@@ -29,6 +30,7 @@ import DeliveryEstimate from '../components/producto/DeliveryEstimate'
 import AsesorModal from '../components/producto/AsesorModal'
 import AccessorySuggestions from '../components/producto/AccessorySuggestions'
 import ProductReviews from '../components/producto/ProductReviews'
+import WhyMatCell from '../components/producto/WhyMatCell'
 import StickyBuyBar from '../components/producto/StickyBuyBar'
 import WishlistHeart from '../components/producto/WishlistHeart'
 import ReviewForm from '../components/resenas/ReviewForm'
@@ -315,10 +317,17 @@ export default function ProductoDetalle() {
             )}
           </div>
 
-          {agotado && <p className="producto-agotado">Agotado en este color</p>}
-          {!agotado && stockBajo && (
-            <p className="producto-stock-bajo">Quedan {stockMostrado} unidades</p>
+          {varianteActiva && !agotado && stockMostrado < 3 && (
+            <div className="demand-badge demand-badge--red">
+              <FiZap size={13} /> Pocas unidades
+            </div>
           )}
+          {varianteActiva && !agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
+            <div className="demand-badge demand-badge--black">
+              🔥 Alta demanda
+            </div>
+          )}
+          {agotado && <p className="producto-agotado">Agotado en este color</p>}
 
           {producto.incluye_regalo && (
             <p className="producto-regalo">
@@ -789,6 +798,8 @@ export default function ProductoDetalle() {
         <h2>Cuéntanos tu experiencia</h2>
         <ReviewForm productoId={producto.id} />
       </section>
+
+      <WhyMatCell />
 
       <StickyBuyBar
         producto={producto}

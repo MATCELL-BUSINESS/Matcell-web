@@ -7,6 +7,7 @@ import {
 } from '../lib/api'
 import Hero from '../components/home/Hero'
 import VideoSection from '../components/home/VideoSection'
+import HomeBundleBanner from '../components/home/HomeBundleBanner'
 import QuickCategories from '../components/home/QuickCategories'
 import BestSellers from '../components/home/BestSellers'
 import HowWeCertify from '../components/home/HowWeCertify'
@@ -33,6 +34,7 @@ export default function Home() {
     <>
       <Hero />
       <VideoSection />
+      <HomeBundleBanner />
       <QuickCategories categorias={categorias} />
       <BestSellers productos={productos} />
       <HowWeCertify />

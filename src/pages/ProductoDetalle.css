@@ -60,6 +60,27 @@
   text-decoration: line-through;
 }
 
+.demand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.demand-badge--red {
+  background: #FF2D00;
+  color: #fff;
+}
+
+.demand-badge--black {
+  background: #111;
+  color: #fff;
+}
+
 .producto-stock-bajo {
   font-size: 13px;
   font-weight: 600;
