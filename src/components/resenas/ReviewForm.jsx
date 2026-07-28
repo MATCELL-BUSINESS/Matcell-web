@@ -50,10 +50,10 @@ export default function ReviewForm({ productoId = null }) {
         const ext = foto.name.split('.').pop()
         const ruta = `resenas/${crypto.randomUUID()}.${ext}`
         const { error: uploadError } = await supabase.storage
-          .from('reseñas')
+          .from('resenas')
           .upload(ruta, foto, { contentType: foto.type, upsert: false })
         if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('reseñas').getPublicUrl(ruta)
+        const { data: urlData } = supabase.storage.from('resenas').getPublicUrl(ruta)
         fotoUrl = urlData.publicUrl
       }
 
