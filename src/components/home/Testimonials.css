@@ -50,6 +50,14 @@
   margin: 0 0 14px;
 }
 
+.testimonial-foto {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
 .testimonial-author {
   font-size: 13px;
   font-weight: 600;
