@@ -37,9 +37,9 @@ export default function Testimonials({ resenas = [] }) {
               )}
             </div>
             <p className="testimonial-comment">"{resena.comentario}"</p>
-            {resena.foto_url?.trim() ? (
+            {resena.foto_url && resena.foto_url.trim() !== '' && (
               <img className="testimonial-foto" src={resena.foto_url} alt="Foto de reseña" />
-            ) : null}
+            )}
             <p className="testimonial-author">
               {resena.nombre_cliente}
               {resena.ciudad && <span> &middot; {resena.ciudad}</span>}
