@@ -20,14 +20,21 @@ export default function Testimonials({ resenas = [] }) {
       <div className="testimonials-scroll">
         {resenas.map((resena) => (
           <div key={resena.id} className="testimonial-card">
-            <div className="testimonial-stars">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <FiStar
-                  key={i}
-                  size={15}
-                  fill={i < resena.calificacion ? 'currentColor' : 'none'}
-                />
-              ))}
+            <div className="testimonial-stars-row">
+              <div className="testimonial-stars">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FiStar
+                    key={i}
+                    size={15}
+                    fill={i < resena.calificacion ? 'currentColor' : 'none'}
+                  />
+                ))}
+              </div>
+              {resena.creado_en && (
+                <span className="testimonial-fecha">
+                  {new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(resena.creado_en))}
+                </span>
+              )}
             </div>
             <p className="testimonial-comment">"{resena.comentario}"</p>
             {resena.foto_url?.trim() ? (
@@ -37,11 +44,6 @@ export default function Testimonials({ resenas = [] }) {
               {resena.nombre_cliente}
               {resena.ciudad && <span> &middot; {resena.ciudad}</span>}
             </p>
-            {resena.creado_en && (
-              <p className="testimonial-fecha">
-                {new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(resena.creado_en))}
-              </p>
-            )}
           </div>
         ))}
       </div>
