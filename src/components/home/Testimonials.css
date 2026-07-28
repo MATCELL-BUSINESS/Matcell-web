@@ -71,6 +71,12 @@
   color: #888;
 }
 
+.testimonial-fecha {
+  font-size: 12px;
+  color: #aaa;
+  margin: 4px 0 0;
+}
+
 @media (max-width: 700px) {
   .testimonials {
     padding: 40px 20px;

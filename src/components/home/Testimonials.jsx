@@ -30,13 +30,18 @@ export default function Testimonials({ resenas = [] }) {
               ))}
             </div>
             <p className="testimonial-comment">"{resena.comentario}"</p>
-            {resena.foto_url && (
+            {resena.foto_url?.trim() ? (
               <img className="testimonial-foto" src={resena.foto_url} alt="Foto de reseña" />
-            )}
+            ) : null}
             <p className="testimonial-author">
               {resena.nombre_cliente}
               {resena.ciudad && <span> &middot; {resena.ciudad}</span>}
             </p>
+            {resena.creado_en && (
+              <p className="testimonial-fecha">
+                {new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(resena.creado_en))}
+              </p>
+            )}
           </div>
         ))}
       </div>
