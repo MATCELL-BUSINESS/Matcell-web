@@ -57,6 +57,7 @@ export default function Footer() {
     { label: 'Garantía',             to: '/politicas#garantia' },
     { label: 'Términos',             to: '/politicas#terminos' },
     { label: 'Contacto por WhatsApp',to: `https://wa.me/${whatsapp}`, external: true },
+    { label: 'Vende con nosotros',   to: '/mayoristas' },
   ]
   const whatsappHref = `https://wa.me/${whatsapp}`
 
