@@ -1,6 +1,8 @@
 import './VideoSection.css'
 
 const VIDEOS = [
+  { id: '1213795010', titulo: 'Cliente feliz con MacBook' },
+  { id: '1213795452', titulo: 'Cliente unboxing iPad' },
   { id: '1206912942', titulo: 'Top celulares' },
   { id: '1206912681', titulo: 'Unboxing MacBook' },
   { id: '1206912642', titulo: 'Empacando pedido' },
