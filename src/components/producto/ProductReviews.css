@@ -103,7 +103,7 @@
 
 .review-card-foto {
   width: 100%;
-  min-height: 250px;
+  min-height: 180px;
   object-fit: cover;
   border-radius: 8px;
   margin: 6px 0;
