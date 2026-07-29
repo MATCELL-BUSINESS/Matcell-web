@@ -317,12 +317,12 @@ export default function ProductoDetalle() {
             )}
           </div>
 
-          {varianteActiva && !agotado && stockMostrado < 3 && (
+          {(varianteActiva || variantes.length === 0) && !agotado && stockMostrado > 0 && stockMostrado < 3 && (
             <div className="demand-badge demand-badge--red">
               <FiZap size={13} /> Pocas unidades
             </div>
           )}
-          {varianteActiva && !agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
+          {(varianteActiva || variantes.length === 0) && !agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
             <div className="demand-badge demand-badge--black">
               🔥 Alta demanda
             </div>

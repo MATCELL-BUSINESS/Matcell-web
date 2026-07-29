@@ -37,7 +37,7 @@ export default function ProductCard({ producto }) {
           )}
         </div>
         {stockBajo && (
-          <p className="product-stock-low">Quedan {producto.stock} unidades</p>
+          <p className="product-stock-low">{producto.stock === 1 ? 'Queda 1 unidad' : `Quedan ${producto.stock} unidades`}</p>
         )}
       </div>
     </Link>
