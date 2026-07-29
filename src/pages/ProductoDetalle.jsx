@@ -12,7 +12,7 @@ import {
   FiStar,
   FiCopy,
   FiX,
-  FiZap,
+
 } from 'react-icons/fi'
 import {
   getProductoById,
@@ -146,7 +146,6 @@ export default function ProductoDetalle() {
   const precioMostrado = varianteActiva?.precio ?? producto.precio
   const stockBajo = stockMostrado > 0 && stockMostrado <= STOCK_BAJO_UMBRAL
   const agotado = stockMostrado === 0 && variantes.length > 0
-  console.log('[DemandBadge]', { stockMostrado, varianteActiva: varianteActiva?.id ?? null, variantesLength: variantes.length })
   // Requiere que el cliente seleccione una variante antes de agregar al carrito
   const debeSeleccionar = variantes.length > 0 && !varianteActiva
 
@@ -318,16 +317,7 @@ export default function ProductoDetalle() {
             )}
           </div>
 
-          {!agotado && stockMostrado > 0 && stockMostrado < 3 && (
-            <div className="demand-badge demand-badge--red">
-              <FiZap size={13} /> Pocas unidades
-            </div>
-          )}
-          {!agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
-            <div className="demand-badge demand-badge--black">
-              🔥 Alta demanda
-            </div>
-          )}
+
           {agotado && <p className="producto-agotado">Agotado en este color</p>}
 
           {producto.incluye_regalo && (
