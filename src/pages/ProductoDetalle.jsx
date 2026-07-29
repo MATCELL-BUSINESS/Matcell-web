@@ -146,6 +146,7 @@ export default function ProductoDetalle() {
   const precioMostrado = varianteActiva?.precio ?? producto.precio
   const stockBajo = stockMostrado > 0 && stockMostrado <= STOCK_BAJO_UMBRAL
   const agotado = stockMostrado === 0 && variantes.length > 0
+  console.log('[DemandBadge]', { stockMostrado, varianteActiva: varianteActiva?.id ?? null, variantesLength: variantes.length })
   // Requiere que el cliente seleccione una variante antes de agregar al carrito
   const debeSeleccionar = variantes.length > 0 && !varianteActiva
 
@@ -317,12 +318,12 @@ export default function ProductoDetalle() {
             )}
           </div>
 
-          {(varianteActiva || variantes.length === 0) && !agotado && stockMostrado > 0 && stockMostrado < 3 && (
+          {!agotado && stockMostrado > 0 && stockMostrado < 3 && (
             <div className="demand-badge demand-badge--red">
               <FiZap size={13} /> Pocas unidades
             </div>
           )}
-          {(varianteActiva || variantes.length === 0) && !agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
+          {!agotado && stockMostrado >= 3 && stockMostrado <= 4 && (
             <div className="demand-badge demand-badge--black">
               🔥 Alta demanda
             </div>
