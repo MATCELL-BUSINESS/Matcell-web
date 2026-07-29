@@ -15,6 +15,7 @@ import Cuenta from './pages/Cuenta'
 import MisPedidos from './pages/MisPedidos'
 import MiListaDeseos from './pages/MiListaDeseos'
 import Politicas from './pages/Politicas'
+import Mayoristas from './pages/Mayoristas'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/mis-pedidos" element={<MisPedidos />} />
                 <Route path="/mi-lista-deseos" element={<MiListaDeseos />} />
                 <Route path="/politicas" element={<Politicas />} />
+                <Route path="/mayoristas" element={<Mayoristas />} />
               </Route>
             </Routes>
           </CartProvider>

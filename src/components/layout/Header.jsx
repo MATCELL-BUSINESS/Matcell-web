@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { label: 'Accesorios', to: '/catalogo/accesorios' },
   { label: 'iPad / Mac', to: '/catalogo/ipad-mac' },
   { label: 'Android', to: '/catalogo/android', disabled: true },
+  { label: 'Vende con nosotros', to: '/mayoristas' },
 ]
 
 export default function Header() {

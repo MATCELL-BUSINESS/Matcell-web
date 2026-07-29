@@ -1,0 +1,48 @@
+.mayoristas-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+}
+
+.mayoristas-card {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+.mayoristas-etiqueta {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-naranja);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px;
+}
+
+.mayoristas-titulo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-negro);
+  margin: 0 0 16px;
+  line-height: 1.25;
+}
+
+.mayoristas-texto {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0 0 32px;
+}
+
+.mayoristas-btn {
+  display: inline-block;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .mayoristas-titulo {
+    font-size: 22px;
+  }
+}
