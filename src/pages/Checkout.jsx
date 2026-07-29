@@ -400,13 +400,9 @@ export default function Checkout() {
                 <div>
                   <p className="envio-opcion-titulo">Envío nacional</p>
                   <p className="envio-opcion-detalle">
-                    Incluye Santa Marta y el resto del país
-                    {envioNacional?.dias_min && (
-                      <>
-                        {' '}· Llega entre el {formatFechaCorta(sumarDias(hoy, envioNacional.dias_min))} y
-                        el {formatFechaCorta(sumarDias(hoy, envioNacional.dias_max))}
-                      </>
-                    )}
+                    {envioNacional?.dias_min
+                      ? `Llega entre el ${formatFechaCorta(sumarDias(hoy, envioNacional.dias_min))} y el ${formatFechaCorta(sumarDias(hoy, envioNacional.dias_max))}`
+                      : 'Envío a todo el país'}
                   </p>
                 </div>
                 <span className="envio-opcion-precio">
