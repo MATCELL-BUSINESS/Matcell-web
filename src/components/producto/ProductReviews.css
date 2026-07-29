@@ -83,14 +83,14 @@
 .reviews-page {
   flex-shrink: 0;
   display: flex;
-  gap: 16px;
+  justify-content: center;
   box-sizing: border-box;
 }
 
 /* ── Tarjeta individual ──────────────────────────── */
 .review-card {
-  flex: 0 0 300px;
-  scroll-snap-align: start;
+  width: 100%;
+  max-width: 600px;
   background: #fafafa;
   border: 1px solid #eee;
   border-radius: 14px;

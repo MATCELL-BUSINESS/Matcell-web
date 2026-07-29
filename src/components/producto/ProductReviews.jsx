@@ -37,17 +37,10 @@ function ReviewCard({ resena }) {
 }
 
 export default function ProductReviews({ resenas = [], esEspecifica }) {
-  const [perView, setPerView] = useState(1)
+  const perView = 1
   const [current, setCurrent] = useState(0)
   const timerRef = useRef(null)
   const touchStartX = useRef(null)
-
-  useEffect(() => {
-    const update = () => setPerView(window.innerWidth >= 768 ? 2 : 1)
-    update()
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [])
 
   // Group reviews into pages of `perView`
   const pages = []
