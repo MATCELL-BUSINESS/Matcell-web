@@ -95,6 +95,84 @@
   gap: 16px;
 }
 
+/* ── Combobox ── */
+.combobox {
+  position: relative;
+}
+
+.combobox input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.combobox input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.combobox-list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 200;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.combobox-list li {
+  padding: 9px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--color-negro);
+}
+
+.combobox-list li:hover {
+  background: #fafafa;
+}
+
+/* ── Info nota ciudad ── */
+.checkout-ciudad-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #888;
+  margin: -6px 0 0;
+  line-height: 1.5;
+}
+
+.checkout-ciudad-nota svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Sidebar envío labels ── */
+.checkout-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+  padding: 6px 0;
+}
+
+.envio-gratis-label {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.envio-pendiente-label {
+  color: #888;
+  font-style: italic;
+}
+
 .checkout-form > .btn {
   align-self: flex-start;
   margin-top: 8px;

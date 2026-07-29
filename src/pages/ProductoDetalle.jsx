@@ -791,7 +791,7 @@ export default function ProductoDetalle() {
         </div>
       </div>
 
-      <AccessorySuggestions productos={accesorios} esAccesorio={esAccesorio} />
+      <WhyMatCell />
       <ProductReviews resenas={reviewsData.resenas} esEspecifica={reviewsData.esEspecifica} />
 
       <section className="producto-review-form">
@@ -799,7 +799,7 @@ export default function ProductoDetalle() {
         <ReviewForm productoId={producto.id} />
       </section>
 
-      <WhyMatCell />
+      <AccessorySuggestions productos={accesorios} esAccesorio={esAccesorio} />
 
       <StickyBuyBar
         producto={producto}
