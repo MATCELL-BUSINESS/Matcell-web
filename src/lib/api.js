@@ -162,21 +162,20 @@ export async function getProductoById(id) {
   }
 }
 
-export async function getResenasProducto(productoId, limit = 6) {
+export async function getResenasProducto(productoId) {
   const { data: especificas, error: errorEspecificas } = await supabase
     .from('resenas')
     .select('id, nombre_cliente, ciudad, calificacion, comentario, foto_url, creado_en')
     .eq('estado', 'aprobada')
     .eq('producto_id', productoId)
     .order('creado_en', { ascending: false })
-    .limit(limit)
 
   if (errorEspecificas) throw errorEspecificas
   if (especificas && especificas.length > 0) {
     return { resenas: especificas, esEspecifica: true }
   }
 
-  const generales = await getResenasAprobadas(limit)
+  const generales = await getResenasAprobadas()
   return { resenas: generales, esEspecifica: false }
 }
 
