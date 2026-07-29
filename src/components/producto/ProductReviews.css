@@ -89,24 +89,23 @@
 
 /* ── Tarjeta individual ──────────────────────────── */
 .review-card {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 300px;
+  scroll-snap-align: start;
   background: #fafafa;
   border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 16px 18px;
+  border-radius: 14px;
+  padding: 24px;
   box-sizing: border-box;
-  min-height: 160px;
   display: flex;
   flex-direction: column;
 }
 
 .review-card-foto {
   width: 100%;
-  min-height: 180px;
+  min-height: 220px;
   object-fit: cover;
   border-radius: 8px;
-  margin: 6px 0;
+  margin-bottom: 14px;
   display: block;
 }
 
