@@ -20,8 +20,13 @@ function ReviewCard({ resena }) {
     <div className="review-card">
       <Stars rating={resena.calificacion} />
       <p className="review-comment">"{resena.comentario}"</p>
-      {resena.foto_url && (
-        <img className="review-card-foto" src={resena.foto_url} alt="Foto de reseña" />
+      {resena.foto_url && resena.foto_url.trim() !== '' && (
+        <img
+          className="review-card-foto"
+          src={resena.foto_url}
+          alt="Foto de reseña"
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
       )}
       <p className="review-author">
         {resena.nombre_cliente}

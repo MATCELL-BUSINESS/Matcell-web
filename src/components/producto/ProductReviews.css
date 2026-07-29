@@ -96,8 +96,7 @@
   border-radius: 12px;
   padding: 16px 18px;
   box-sizing: border-box;
-  height: 160px;
-  overflow: hidden;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
 }
