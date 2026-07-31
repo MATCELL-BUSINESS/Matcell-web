@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FiStar } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
-import { crearResena } from '../../lib/api'
+import { crearResena, getProductosActivos } from '../../lib/api'
 import './ReviewForm.css'
 
 export default function ReviewForm({ productoId = null }) {
@@ -18,9 +18,16 @@ export default function ReviewForm({ productoId = null }) {
   const [enviando, setEnviando] = useState(false)
   const [enviada, setEnviada] = useState(false)
   const [error, setError] = useState(null)
+  const [productos, setProductos] = useState([])
+  const [productoSeleccionado, setProductoSeleccionado] = useState('')
   const fotoInputRef = useRef(null)
 
-  const formValido = nombre.trim() && calificacion > 0 && comentario.trim()
+  useEffect(() => {
+    if (productoId) return
+    getProductosActivos().then(setProductos).catch(console.error)
+  }, [productoId])
+
+  const formValido = nombre.trim() && ciudad.trim() && calificacion > 0 && comentario.trim()
 
   const handleFoto = (e) => {
     const archivo = e.target.files?.[0]
@@ -58,7 +65,7 @@ export default function ReviewForm({ productoId = null }) {
       }
 
       await crearResena({
-        productoId,
+        productoId: productoId ?? (productoSeleccionado || null),
         nombre: nombre.trim(),
         ciudad: ciudad.trim(),
         calificacion,
@@ -90,10 +97,25 @@ export default function ReviewForm({ productoId = null }) {
           <input value={nombre} onChange={(e) => setNombre(e.target.value)} required />
         </label>
         <label>
-          Ciudad (opcional)
-          <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} />
+          Ciudad
+          <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} required />
         </label>
       </div>
+
+      {!productoId && productos.length > 0 && (
+        <label>
+          Producto (opcional)
+          <select
+            value={productoSeleccionado}
+            onChange={(e) => setProductoSeleccionado(e.target.value)}
+          >
+            <option value="">— Selecciona un producto —</option>
+            {productos.map((p) => (
+              <option key={p.id} value={p.id}>{p.nombre}</option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <div className="review-form-stars">
         <p>Calificación</p>

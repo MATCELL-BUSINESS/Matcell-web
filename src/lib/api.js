@@ -163,20 +163,33 @@ export async function getProductoById(id) {
 }
 
 export async function getResenasProducto(productoId) {
-  const { data: especificas, error: errorEspecificas } = await supabase
+  const { data, error } = await supabase
     .from('resenas')
-    .select('id, nombre_cliente, ciudad, calificacion, comentario, foto_url, creado_en')
+    .select('id, nombre_cliente, ciudad, calificacion, comentario, foto_url, creado_en, producto_id')
     .eq('estado', 'aprobada')
-    .eq('producto_id', productoId)
     .order('creado_en', { ascending: false })
 
-  if (errorEspecificas) throw errorEspecificas
-  if (especificas && especificas.length > 0) {
-    return { resenas: especificas, esEspecifica: true }
-  }
+  if (error) throw error
 
-  const generales = await getResenasAprobadas()
-  return { resenas: generales, esEspecifica: false }
+  const todas = data ?? []
+  const especificas = todas.filter((r) => r.producto_id === productoId)
+  const otras = todas.filter((r) => r.producto_id !== productoId)
+
+  return {
+    resenas: [...especificas, ...otras],
+    esEspecifica: especificas.length > 0,
+  }
+}
+
+export async function getProductosActivos() {
+  const { data, error } = await supabase
+    .from('productos')
+    .select('id, nombre')
+    .eq('activo', true)
+    .order('nombre', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
 }
 
 export async function getAccesoriosSugeridos(excludeIds, limit = 4) {
