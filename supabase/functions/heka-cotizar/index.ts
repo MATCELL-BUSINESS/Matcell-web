@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       })
     }
     const loginData = await loginRes.json()
-    token = loginData.data?.token ?? loginData.token
+    token = loginData.response?.token ?? loginData.data?.token ?? loginData.token
     if (!token) {
       return new Response(JSON.stringify({ error: 'Token no encontrado en respuesta Heka' }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,13 +76,13 @@ Deno.serve(async (req) => {
     })
   }
   const cityData = await cityRes.json()
-  const ciudades: Record<string, unknown>[] = cityData.data ?? cityData
+  const ciudades: Record<string, unknown>[] = cityData.response?.rows ?? cityData.data ?? cityData
   if (!Array.isArray(ciudades) || ciudades.length === 0) {
     return new Response(JSON.stringify({ error: 'Ciudad no encontrada en Heka' }), {
       status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
-  const cityCode = ciudades[0].code ?? ciudades[0].id ?? ciudades[0].dane_code
+  const cityCode = ciudades[0].dane ?? ciudades[0].code ?? ciudades[0].id ?? ciudades[0].dane_code
 
   // ── 4. Cotizar ───────────────────────────────────────────────────
   const quoterRes = await fetch(`${HEKA_HOST}/api/v1/shipping/quoter`, {
@@ -112,14 +112,14 @@ Deno.serve(async (req) => {
     })
   }
   const quoterData = await quoterRes.json()
-  const cotizaciones: Record<string, unknown>[] = quoterData.data ?? quoterData ?? []
+  const cotizaciones: Record<string, unknown>[] = quoterData.response ?? quoterData.data ?? quoterData ?? []
 
   // ── 5. Normalizar y ordenar por precio ──────────────────────────
   const resultado = (Array.isArray(cotizaciones) ? cotizaciones : [])
     .map((c) => ({
-      transportadora: String(c.carrier_name ?? c.name ?? c.carrier ?? ''),
-      precio: Number(c.shipping_cost ?? c.price ?? c.cost ?? 0),
-      tiempo: String(c.delivery_time ?? c.days ?? c.estimated_days ?? ''),
+      transportadora: String(c.distributor_id ?? c.carrier_name ?? c.name ?? c.carrier ?? ''),
+      precio: Number(c.total_price ?? c.shipping_cost ?? c.price ?? c.cost ?? 0),
+      tiempo: String(c.delivery_time ?? c.days ?? c.estimated_days ?? c.message ?? ''),
     }))
     .filter((c) => c.transportadora && c.precio > 0)
     .sort((a, b) => a.precio - b.precio)
