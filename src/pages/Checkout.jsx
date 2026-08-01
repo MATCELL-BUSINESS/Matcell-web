@@ -1,69 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FiCheck, FiMapPin, FiInfo } from 'react-icons/fi'
+import { FiCheck, FiMapPin, FiInfo, FiAlertCircle } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { getEnvioNacional, getRecogidaLocal, crearPedido } from '../lib/api'
+import { crearPedido } from '../lib/api'
 import { supabase } from '../lib/supabaseClient'
-import { formatCOP, formatFechaCorta, sumarDias } from '../lib/format'
+import { formatCOP } from '../lib/format'
 import { DEPARTAMENTOS, MUNICIPIOS } from '../lib/municipios'
 import './Checkout.css'
 
 const PASOS = ['Datos', 'Envío', 'Pago']
-
-// ── Normalización ────────────────────────────────────────────────────────────
-const ACENTOS = { á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ñ: 'n', ü: 'u' }
-function normalizar(texto) {
-  return (texto ?? '')
-    .trim()
-    .toLowerCase()
-    .split('')
-    .map((char) => ACENTOS[char] ?? char)
-    .join('')
-}
-
-// ── Tarifas de envío ─────────────────────────────────────────────────────────
-const TARIFAS_ENVIO = {
-  local: {
-    ciudades: ['cienaga'],
-    precio: 0,
-    label: 'Recogida en local',
-  },
-  caribe: {
-    ciudades: ['santa marta', 'barranquilla', 'cartagena'],
-    precio: 12000,
-    label: 'Envío nacional',
-  },
-  nacional: {
-    ciudades: [
-      'bogota', 'bogota d.c.', 'medellin', 'cali', 'bucaramanga',
-      'monteria', 'sincelejo', 'riohacha', 'maicao', 'cucuta',
-      'pereira', 'manizales', 'armenia', 'ibague', 'neiva',
-      'villavicencio', 'valledupar', 'pasto', 'popayan', 'tunja',
-      'mocoa', 'yopal', 'soledad', 'itagui', 'bello', 'envigado',
-      'palmira', 'tulua', 'buga', 'cartago',
-    ],
-    precio: 19000,
-    label: 'Envío nacional',
-  },
-  alejadas: {
-    ciudades: [
-      'quibdo', 'florencia', 'arauca', 'mitu', 'san jose del guaviare',
-      'inirida', 'puerto carreno', 'leticia', 'san andres',
-    ],
-    precio: 22000,
-    label: 'Envío nacional',
-  },
-}
-
-function calcularEnvio(ciudad) {
-  if (!ciudad || ciudad.trim() === '') return null
-  const norm = normalizar(ciudad)
-  for (const zona of Object.values(TARIFAS_ENVIO)) {
-    if (zona.ciudades.map(normalizar).includes(norm)) return zona.precio
-  }
-  return 22000
-}
+const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda%20con%20el%20env%C3%ADo'
 
 // ── Combobox con búsqueda ─────────────────────────────────────────────────────
 function Combobox({ value, onChange, opciones, placeholder, disabled }) {
@@ -71,7 +18,6 @@ function Combobox({ value, onChange, opciones, placeholder, disabled }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  // Sincronizar cuando el valor externo cambia (ej: reset de ciudad al cambiar depto)
   useEffect(() => { setQuery(value ?? '') }, [value])
 
   useEffect(() => {
@@ -136,16 +82,16 @@ export default function Checkout() {
     departamento: '',
     ciudad: '',
   })
-  const [metodoEnvio, setMetodoEnvio] = useState(null)
-  const [envioNacional, setEnvioNacional] = useState(null)
-  const [recogidaLocal, setRecogidaLocal] = useState(null)
+
+  // ── Estado envío Heka ─────────────────────────────────────────────
+  const [cotizaciones, setCotizaciones] = useState([])
+  const [cotizandoEnvio, setCotizandoEnvio] = useState(false)
+  const [errorEnvio, setErrorEnvio] = useState(null)
+  const [transportadoraElegida, setTransportadoraElegida] = useState(null)
+
+  // ── Estado pago ───────────────────────────────────────────────────
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    getEnvioNacional().then(setEnvioNacional).catch(console.error)
-    getRecogidaLocal().then(setRecogidaLocal).catch(console.error)
-  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -170,12 +116,7 @@ export default function Checkout() {
     )
   }
 
-  // ── Cálculo de envío ──────────────────────────────────────────────────────
-  const costoCalculado = calcularEnvio(datosCliente.ciudad)
-  const esCienaga = costoCalculado === 0
-  const envioGratisPorMonto = subtotal >= (envioNacional?.gratis_desde_monto ?? Infinity)
-  const costoEnvioNacional = envioGratisPorMonto ? 0 : (costoCalculado ?? envioNacional?.costo ?? 0)
-  const costoEnvio = metodoEnvio === 'recogida_local' ? 0 : costoEnvioNacional
+  const costoEnvio = transportadoraElegida?.precio ?? 0
   const total = subtotal + costoEnvio
 
   const setCampo = (campo) => (valor) =>
@@ -186,6 +127,18 @@ export default function Checkout() {
 
   const handleDepartamento = (depto) => {
     setDatosCliente((d) => ({ ...d, departamento: depto, ciudad: '' }))
+    // Resetear cotización al cambiar departamento
+    setCotizaciones([])
+    setTransportadoraElegida(null)
+    setErrorEnvio(null)
+  }
+
+  const handleCiudad = (ciudad) => {
+    setCampo('ciudad')(ciudad)
+    // Resetear cotización al cambiar ciudad
+    setCotizaciones([])
+    setTransportadoraElegida(null)
+    setErrorEnvio(null)
   }
 
   const datosValidos =
@@ -195,15 +148,35 @@ export default function Checkout() {
     datosCliente.departamento.trim() &&
     datosCliente.ciudad.trim()
 
-  const handleSiguienteDatos = (e) => {
+  // ── Cotizar con Heka al avanzar al paso 2 ────────────────────────
+  const handleSiguienteDatos = async (e) => {
     e.preventDefault()
     if (!datosValidos) return
-    if (esCienaga) setMetodoEnvio('recogida_local')
+
     setPaso(2)
+    setCotizandoEnvio(true)
+    setErrorEnvio(null)
+    setCotizaciones([])
+    setTransportadoraElegida(null)
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('heka-cotizar', {
+        body: { city_name: datosCliente.ciudad, declared_value: subtotal },
+      })
+      if (fnError || !data) throw fnError ?? new Error('Sin respuesta')
+      if (data.error) throw new Error(data.error)
+      if (!data.cotizaciones || data.cotizaciones.length === 0) throw new Error('Ciudad no encontrada en Heka')
+      setCotizaciones(data.cotizaciones)
+    } catch (err) {
+      console.error('[Heka]', err)
+      setErrorEnvio(err.message ?? 'Error desconocido')
+    } finally {
+      setCotizandoEnvio(false)
+    }
   }
 
   const handleSiguienteEnvio = () => {
-    if (!metodoEnvio) return
+    if (!transportadoraElegida) return
     setPaso(3)
   }
 
@@ -215,10 +188,11 @@ export default function Checkout() {
     try {
       pedido = await crearPedido({
         datosCliente,
-        envio: { metodo: metodoEnvio },
+        envio: { metodo: 'nacional' },
         items,
         subtotal,
         costoEnvio,
+        transportadoraElegida: transportadoraElegida?.transportadora ?? null,
         usuarioId: user?.id ?? null,
       })
     } catch (err) {
@@ -235,11 +209,9 @@ export default function Checkout() {
       const { data, error: errorFirma } = await supabase.functions.invoke('wompi-firma', {
         body: { referencia: numeroPedido, montoEnCentavos },
       })
-
       if (errorFirma || !data?.firma) throw errorFirma ?? new Error('Sin firma')
 
       const esLocalhost = window.location.hostname === 'localhost'
-
       const checkout = new window.WidgetCheckout({
         currency: 'COP',
         amountInCents: montoEnCentavos,
@@ -259,9 +231,7 @@ export default function Checkout() {
             state: { numeroPedido, total: pedido.total, nombre: datosCliente.nombre },
           })
         } else {
-          setError(
-            'El pago no se completó. Puedes intentar de nuevo o contactarnos si el dinero fue descontado.'
-          )
+          setError('El pago no se completó. Puedes intentar de nuevo o contactarnos si el dinero fue descontado.')
         }
       })
     } catch (err) {
@@ -276,16 +246,13 @@ export default function Checkout() {
     ? (MUNICIPIOS[datosCliente.departamento] ?? [])
     : []
 
-  const hoy = new Date()
-
-  // Texto del envío para el sidebar
-  const envioSidebarLabel = () => {
-    if (!datosCliente.ciudad.trim()) return { texto: 'Se calcula al ingresar tu ciudad', verde: false }
-    if (envioGratisPorMonto) return { texto: 'Gratis', verde: true }
-    if (esCienaga) return { texto: 'Recogida en local · Gratis', verde: true }
-    return { texto: formatCOP(costoCalculado ?? envioNacional?.costo ?? 0), verde: false }
+  // ── Sidebar: texto de envío ───────────────────────────────────────
+  const sidebarEnvio = () => {
+    if (transportadoraElegida) return { texto: formatCOP(transportadoraElegida.precio), verde: false }
+    if (cotizandoEnvio) return { texto: 'Calculando...', verde: false }
+    return { texto: 'Se calcula al ingresar tu ciudad', verde: false }
   }
-  const sidebarEnvio = envioSidebarLabel()
+  const envioSidebar = sidebarEnvio()
 
   return (
     <div className="checkout-page">
@@ -342,7 +309,7 @@ export default function Checkout() {
                 Ciudad / Municipio
                 <Combobox
                   value={datosCliente.ciudad}
-                  onChange={setCampo('ciudad')}
+                  onChange={handleCiudad}
                   opciones={municipiosDepartamento}
                   placeholder={datosCliente.departamento ? 'Busca tu municipio...' : 'Selecciona primero un departamento'}
                   disabled={!datosCliente.departamento}
@@ -352,7 +319,7 @@ export default function Checkout() {
 
             <p className="checkout-ciudad-nota">
               <FiInfo size={13} />
-              ¿No encuentras tu municipio? Escríbelo manualmente o agrégalo en el campo de referencia. También puedes contactarnos por WhatsApp.
+              ¿No encuentras tu municipio? Escríbelo manualmente. También puedes contactarnos por WhatsApp.
             </p>
 
             <button type="submit" className="btn btn-primary" disabled={!datosValidos}>
@@ -361,59 +328,64 @@ export default function Checkout() {
           </form>
         )}
 
-        {/* ── Paso 2: Envío ── */}
+        {/* ── Paso 2: Envío (Heka) ── */}
         {paso === 2 && (
           <div className="checkout-form">
-            <h2>Método de envío</h2>
+            <h2>Selecciona tu transportadora</h2>
             <p className="checkout-direccion">
               <FiMapPin size={16} />
               Entregar en: <strong>{datosCliente.direccion}, {datosCliente.ciudad}, {datosCliente.departamento}</strong>
             </p>
 
-            <div className="envio-opciones">
-              <label className={`envio-opcion ${!esCienaga ? 'disabled' : ''}`}>
-                <input
-                  type="radio"
-                  name="envio"
-                  disabled={!esCienaga}
-                  checked={metodoEnvio === 'recogida_local'}
-                  onChange={() => setMetodoEnvio('recogida_local')}
-                />
-                <div>
-                  <p className="envio-opcion-titulo">Recogida en el local (Ciénaga)</p>
-                  <p className="envio-opcion-detalle">
-                    {esCienaga
-                      ? 'Gratis · Disponible para tu ciudad'
-                      : 'Solo disponible si la ciudad de entrega es Ciénaga'}
-                  </p>
-                </div>
-                <span className="envio-opcion-precio">Gratis</span>
-              </label>
+            {cotizandoEnvio && (
+              <div className="heka-cargando">
+                <div className="heka-spinner" />
+                <span>Calculando opciones de envío para {datosCliente.ciudad}...</span>
+              </div>
+            )}
 
-              <label className="envio-opcion">
-                <input
-                  type="radio"
-                  name="envio"
-                  checked={metodoEnvio === 'nacional'}
-                  onChange={() => setMetodoEnvio('nacional')}
-                />
+            {!cotizandoEnvio && errorEnvio && (
+              <div className="heka-error">
+                <FiAlertCircle size={20} />
                 <div>
-                  <p className="envio-opcion-titulo">Envío nacional</p>
-                  <p className="envio-opcion-detalle">
-                    {envioNacional?.dias_min
-                      ? `Llega entre el ${formatFechaCorta(sumarDias(hoy, envioNacional.dias_min))} y el ${formatFechaCorta(sumarDias(hoy, envioNacional.dias_max))}`
-                      : 'Envío a todo el país'}
-                  </p>
+                  <p>No pudimos calcular el envío para tu ciudad. Verifica el nombre o contáctanos por WhatsApp.</p>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary heka-error-btn">
+                    Contactar por WhatsApp
+                  </a>
                 </div>
-                <span className="envio-opcion-precio">
-                  {envioGratisPorMonto ? 'Gratis' : formatCOP(costoCalculado ?? envioNacional?.costo ?? 0)}
-                </span>
-              </label>
-            </div>
+              </div>
+            )}
+
+            {!cotizandoEnvio && !errorEnvio && cotizaciones.length > 0 && (
+              <div className="envio-opciones">
+                {cotizaciones.map((c) => (
+                  <label
+                    key={c.transportadora}
+                    className={`envio-opcion ${transportadoraElegida?.transportadora === c.transportadora ? 'seleccionada' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="transportadora"
+                      checked={transportadoraElegida?.transportadora === c.transportadora}
+                      onChange={() => setTransportadoraElegida(c)}
+                    />
+                    <div>
+                      <p className="envio-opcion-titulo">{c.transportadora}</p>
+                      {c.tiempo && <p className="envio-opcion-detalle">Entrega estimada: {c.tiempo}</p>}
+                    </div>
+                    <span className="envio-opcion-precio">{formatCOP(c.precio)}</span>
+                  </label>
+                ))}
+              </div>
+            )}
 
             <div className="checkout-form-actions">
               <button className="btn btn-secondary" onClick={() => setPaso(1)}>Volver</button>
-              <button className="btn btn-primary" onClick={handleSiguienteEnvio} disabled={!metodoEnvio}>
+              <button
+                className="btn btn-primary"
+                onClick={handleSiguienteEnvio}
+                disabled={!transportadoraElegida || cotizandoEnvio}
+              >
                 Continuar a pago
               </button>
             </div>
@@ -431,8 +403,8 @@ export default function Checkout() {
                 <span>{formatCOP(subtotal)}</span>
               </div>
               <div className="checkout-resumen-row">
-                <span>Envío</span>
-                <span>{costoEnvio === 0 ? 'Gratis' : formatCOP(costoEnvio)}</span>
+                <span>Envío · {transportadoraElegida?.transportadora}</span>
+                <span>{formatCOP(costoEnvio)}</span>
               </div>
               <div className="checkout-resumen-row total">
                 <span>Total</span>
@@ -463,7 +435,7 @@ export default function Checkout() {
           </div>
         )}
 
-        {/* ── Sidebar resumen ── */}
+        {/* ── Sidebar ── */}
         <div className="checkout-summary-side">
           <h3>Tu pedido</h3>
           {items.map((item) => (
@@ -481,8 +453,8 @@ export default function Checkout() {
           </div>
           <div className="checkout-summary-row">
             <span>Envío</span>
-            <span className={sidebarEnvio.verde ? 'envio-gratis-label' : 'envio-pendiente-label'}>
-              {sidebarEnvio.texto}
+            <span className={envioSidebar.verde ? 'envio-gratis-label' : 'envio-pendiente-label'}>
+              {envioSidebar.texto}
             </span>
           </div>
           <div className="checkout-summary-row total">

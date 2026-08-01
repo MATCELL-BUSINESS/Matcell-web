@@ -215,9 +215,59 @@
   cursor: pointer;
 }
 
-.envio-opcion:has(input:checked) {
+.envio-opcion:has(input:checked),
+.envio-opcion.seleccionada {
   border-color: var(--color-naranja);
   background: #fff8f6;
+}
+
+/* ── Heka estados ── */
+.heka-cargando {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.heka-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #eee;
+  border-top-color: var(--color-naranja);
+  border-radius: 50%;
+  animation: heka-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes heka-spin {
+  to { transform: rotate(360deg); }
+}
+
+.heka-error {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 16px;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.heka-error svg {
+  color: #e24b4a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.heka-error-btn {
+  margin-top: 12px;
+  display: inline-block;
+  font-size: 14px;
 }
 
 .envio-opcion.disabled {
