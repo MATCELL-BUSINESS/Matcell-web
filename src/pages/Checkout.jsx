@@ -13,12 +13,9 @@ const PASOS = ['Datos', 'Envío', 'Pago']
 const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda%20con%20el%20env%C3%ADo'
 
 const LOGOS_TRANSPORTADORA = {
-  coordinadora:
-    'https://coordinadora.com/wp-content/uploads/2023/03/logo-coordinadora.svg',
-  servientrega:
-    'http://www.servientrega.com/wps/contenthandler/dav/fs-type1/themes/New-Theme-Servientrega/images/svg/logo-servientrega-verde.svg',
-  tcc:
-    'https://storage.googleapis.com/tcc-cloud.appspot.com/tcc_portal/wp-content/uploads/2025/12/logo.svg',
+  coordinadora:    '/logos/coordinadora.svg',
+  servientrega:    '/logos/servientrega.svg',
+  tcc:             '/logos/tcc.svg',
 }
 
 // ── Combobox con búsqueda ─────────────────────────────────────────────────────
