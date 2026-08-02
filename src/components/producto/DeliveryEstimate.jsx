@@ -10,10 +10,16 @@ const FESTIVOS = [
   '2026-08-17','2026-10-12','2026-11-02','2026-11-16','2026-12-08','2026-12-25',
 ]
 
+function toLocalDateStr(fecha) {
+  const y = fecha.getFullYear()
+  const m = String(fecha.getMonth() + 1).padStart(2, '0')
+  const d = String(fecha.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 function esDiaHabil(fecha) {
   const dia = fecha.getDay()
-  const str = fecha.toISOString().split('T')[0]
-  return dia !== 0 && dia !== 6 && !FESTIVOS.includes(str)
+  return dia !== 0 && dia !== 6 && !FESTIVOS.includes(toLocalDateStr(fecha))
 }
 
 function siguienteDiaHabil(fecha) {
