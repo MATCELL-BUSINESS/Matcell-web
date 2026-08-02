@@ -95,7 +95,7 @@ export default function DeliveryEstimate() {
           <div className="dt-circle dt-circle--black">
             <FiShoppingCart size={16} />
           </div>
-          <p className="dt-fecha">{fmtCorta(hoy)}</p>
+          <p className="dt-fecha">{fmtCorta(ahora)}</p>
           <p className="dt-label">Compra</p>
         </div>
 
