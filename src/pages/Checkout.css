@@ -208,6 +208,7 @@
 .envio-opcion {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 16px;
   border: 1px solid #ddd;
   border-radius: 10px;

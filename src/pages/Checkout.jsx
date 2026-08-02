@@ -12,11 +12,15 @@ import './Checkout.css'
 const PASOS = ['Datos', 'Envío', 'Pago']
 const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda%20con%20el%20env%C3%ADo'
 
-// Actualizar estas URLs cuando el bucket 'assets' de Supabase esté creado y los archivos subidos
 const LOGOS_TRANSPORTADORA = {
-  coordinadora:    '/logos/coordinadora.svg',
-  servientrega:    '/logos/servientrega.svg',
-  tcc:             '/logos/tcc.svg',
+  interrapidisimo: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20interrapidisimo.png',
+  coordinadora:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20coordinadora.avif',
+  servientrega:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20servientrega.png',
+  tcc:             'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/Logo_TCC.svg.webp',
+}
+
+function getLogoTransportadora(nombre) {
+  return LOGOS_TRANSPORTADORA[nombre?.toLowerCase()]
 }
 
 // ── Combobox con búsqueda ─────────────────────────────────────────────────────
@@ -376,9 +380,9 @@ export default function Checkout() {
                       checked={transportadoraElegida?.transportadora === c.transportadora}
                       onChange={() => setTransportadoraElegida(c)}
                     />
-                    {LOGOS_TRANSPORTADORA[c.transportadora] && (
+                    {getLogoTransportadora(c.transportadora) && (
                       <img
-                        src={LOGOS_TRANSPORTADORA[c.transportadora]}
+                        src={getLogoTransportadora(c.transportadora)}
                         alt=""
                         className="envio-opcion-logo"
                         onError={(e) => { e.currentTarget.style.display = 'none' }}
