@@ -17,31 +17,49 @@ function toLocalDateStr(fecha) {
   return `${y}-${m}-${d}`
 }
 
-function esDiaHabil(fecha) {
-  const dia = fecha.getDay()
-  return dia !== 0 && dia !== 6 && !FESTIVOS.includes(toLocalDateStr(fecha))
+function esFestivo(fecha) {
+  return FESTIVOS.includes(toLocalDateStr(fecha))
 }
 
-function siguienteDiaHabil(fecha) {
+// Días hábiles para entrega: lun–sáb, excluye dom y festivos
+function esDiaHabilEntrega(fecha) {
+  const dia = fecha.getDay()
+  return dia !== 0 && !esFestivo(fecha)
+}
+
+// Días hábiles para despacho: lun–vie, excluye sáb, dom y festivos
+function esDiaHabilDespacho(fecha) {
+  const dia = fecha.getDay()
+  return dia !== 0 && dia !== 6 && !esFestivo(fecha)
+}
+
+function siguienteDiaHabilDespacho(fecha) {
   const sig = new Date(fecha)
   sig.setDate(sig.getDate() + 1)
-  while (!esDiaHabil(sig)) sig.setDate(sig.getDate() + 1)
+  while (!esDiaHabilDespacho(sig)) sig.setDate(sig.getDate() + 1)
   return sig
 }
 
 function calcularFechaDespacho() {
   const ahora = new Date()
-  if (esDiaHabil(ahora) && ahora.getHours() < 15) return ahora
-  return siguienteDiaHabil(ahora)
+  const dia = ahora.getDay()   // 0=dom,1=lun…5=vie,6=sáb
+  const hora = ahora.getHours()
+
+  // Lun–Vie antes de las 3pm y no festivo → despacha hoy
+  if (dia >= 1 && dia <= 5 && hora < 15 && !esFestivo(ahora)) return ahora
+  // Sáb antes de las 12pm → despacha hoy
+  if (dia === 6 && hora < 12) return ahora
+  // Resto: siguiente día hábil (lun–vie, no festivo)
+  return siguienteDiaHabilDespacho(ahora)
 }
 
 function calcularRangoEntrega(despacho) {
   let n = 0
   const min = new Date(despacho)
-  while (n < 3) { min.setDate(min.getDate() + 1); if (esDiaHabil(min)) n++ }
+  while (n < 3) { min.setDate(min.getDate() + 1); if (esDiaHabilEntrega(min)) n++ }
   n = 0
   const max = new Date(despacho)
-  while (n < 5) { max.setDate(max.getDate() + 1); if (esDiaHabil(max)) n++ }
+  while (n < 5) { max.setDate(max.getDate() + 1); if (esDiaHabilEntrega(max)) n++ }
   return { min, max }
 }
 
@@ -53,20 +71,21 @@ function fmtCorta(d) {
 
 export default function DeliveryEstimate() {
   const ahora = new Date()
-  const esDiaHabilHoy = esDiaHabil(ahora)
-  const anteDe3pm = ahora.getHours() < 15
+  const dia = ahora.getDay()
+  const hora = ahora.getHours()
   const despacho = calcularFechaDespacho()
   const { min, max } = calcularRangoEntrega(despacho)
 
-  const hoy = ahora
-  const entregaRango = `${fmtCorta(min)} – ${fmtCorta(max)}`
-  const despachoLabel = esDiaHabilHoy && anteDe3pm
-    ? `Hoy ${fmtCorta(hoy)}`
-    : fmtCorta(despacho)
+  const despachaMismoDia =
+    (dia >= 1 && dia <= 5 && hora < 15 && !esFestivo(ahora)) ||
+    (dia === 6 && hora < 12)
 
-  const mensajeCaja = esDiaHabilHoy && anteDe3pm
-    ? 'Pide antes de las 3pm — tu pedido sale hoy mismo'
-    : 'Pide ahora — tu pedido sale mañana a primera hora'
+  const entregaRango = `${fmtCorta(min)} – ${fmtCorta(max)}`
+  const despachoLabel = despachaMismoDia ? `Hoy ${fmtCorta(ahora)}` : fmtCorta(despacho)
+
+  const mensajeCaja = despachaMismoDia
+    ? `Pide antes de las ${dia === 6 ? '12pm' : '3pm'} — tu pedido sale hoy mismo`
+    : 'Pide ahora — tu pedido sale el siguiente día hábil'
 
   return (
     <div className="delivery-timeline-wrap">
