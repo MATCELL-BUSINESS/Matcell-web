@@ -282,6 +282,13 @@
   flex-shrink: 0;
 }
 
+.envio-opcion-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .envio-opcion-titulo {
   font-size: 14px;
   font-weight: 700;

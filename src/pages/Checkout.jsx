@@ -12,6 +12,15 @@ import './Checkout.css'
 const PASOS = ['Datos', 'Envío', 'Pago']
 const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda%20con%20el%20env%C3%ADo'
 
+const LOGOS_TRANSPORTADORA = {
+  coordinadora:
+    'https://coordinadora.com/wp-content/uploads/2023/03/logo-coordinadora.svg',
+  servientrega:
+    'http://www.servientrega.com/wps/contenthandler/dav/fs-type1/themes/New-Theme-Servientrega/images/svg/logo-servientrega-verde.svg',
+  tcc:
+    'https://storage.googleapis.com/tcc-cloud.appspot.com/tcc_portal/wp-content/uploads/2025/12/logo.svg',
+}
+
 // ── Combobox con búsqueda ─────────────────────────────────────────────────────
 function Combobox({ value, onChange, opciones, placeholder, disabled }) {
   const [query, setQuery] = useState(value ?? '')
@@ -369,9 +378,16 @@ export default function Checkout() {
                       checked={transportadoraElegida?.transportadora === c.transportadora}
                       onChange={() => setTransportadoraElegida(c)}
                     />
+                    {LOGOS_TRANSPORTADORA[c.transportadora] && (
+                      <img
+                        src={LOGOS_TRANSPORTADORA[c.transportadora]}
+                        alt={c.transportadora}
+                        className="envio-opcion-logo"
+                      />
+                    )}
                     <div>
                       <p className="envio-opcion-titulo">{c.transportadora}</p>
-                      {c.tiempo && <p className="envio-opcion-detalle">Entrega estimada: {c.tiempo}</p>}
+                      {c.tiempo && <p className="envio-opcion-detalle">Entrega estimada: {c.tiempo} días</p>}
                     </div>
                     <span className="envio-opcion-precio">{formatCOP(c.precio)}</span>
                   </label>
