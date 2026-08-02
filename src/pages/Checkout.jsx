@@ -12,12 +12,11 @@ import './Checkout.css'
 const PASOS = ['Datos', 'Envío', 'Pago']
 const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda%20con%20el%20env%C3%ADo'
 
-const SUPABASE_ASSETS = 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/'
 const LOGOS_TRANSPORTADORA = {
-  coordinadora:    `${SUPABASE_ASSETS}logo-coordinadora.avif`,
-  interrapidisimo: `${SUPABASE_ASSETS}logo-interrapidisimo.png`,
-  servientrega:    `${SUPABASE_ASSETS}logo-servientrega.png`,
-  tcc:             `${SUPABASE_ASSETS}logo-tcc.webp`,
+  coordinadora:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo-coordinadora.avif',
+  interrapidisimo: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo-interrapidisimo.png',
+  servientrega:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo-servientrega.png',
+  tcc:             'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo-tcc.webp',
 }
 
 // ── Combobox con búsqueda ─────────────────────────────────────────────────────
