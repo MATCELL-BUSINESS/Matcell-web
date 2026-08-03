@@ -66,6 +66,7 @@ function CiudadBuscador({ value, onSelect }) {
   }
 
   const handleSelect = (ciudad) => {
+    console.log('[CiudadBuscador] handleSelect llamado con:', ciudad)
     setQuery(ciudad.label)
     onSelect(ciudad)
     setOpen(false)
@@ -161,6 +162,7 @@ export default function Checkout() {
     setDatosCliente((d) => ({ ...d, [campo]: e.target.value }))
 
   const handleCiudadHeka = (ciudad) => {
+    console.log('[handleCiudadHeka] llamado con:', ciudad)
     if (!ciudad) {
       setCiudadValidada(false)
       setCiudadDane(null)
