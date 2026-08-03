@@ -66,13 +66,13 @@ function CiudadBuscador({ value, onSelect }) {
   }
 
   const handleSelect = (ciudad) => {
-    setQuery(`${ciudad.label}${ciudad.departamento ? ` (${ciudad.departamento})` : ''}`)
+    setQuery(ciudad.label)
     onSelect(ciudad)
     setOpen(false)
     setSugerencias([])
   }
 
-  const sinResultados = open && !cargando && sugerencias.length === 0 && query.length >= 3
+  const sinResultados = open && !cargando && sugerencias.length === 0 && query.length >= 2
 
   return (
     <div className="combobox" ref={ref}>
@@ -87,7 +87,6 @@ function CiudadBuscador({ value, onSelect }) {
           {sugerencias.map((c) => (
             <li key={c.dane} onMouseDown={() => handleSelect(c)}>
               {c.label}
-              {c.departamento && <span style={{ color: '#aaa', marginLeft: 6, fontSize: 12 }}>({c.departamento})</span>}
             </li>
           ))}
         </ul>
@@ -166,7 +165,7 @@ export default function Checkout() {
       setDatosCliente((d) => ({ ...d, ciudad: '', departamento: '' }))
     } else {
       setCiudadValidada(true)
-      setDatosCliente((d) => ({ ...d, ciudad: ciudad.label, departamento: ciudad.departamento }))
+      setDatosCliente((d) => ({ ...d, ciudad: ciudad.label, departamento: '' }))
     }
     setCotizaciones([])
     setTransportadoraElegida(null)
