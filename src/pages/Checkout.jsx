@@ -193,6 +193,7 @@ export default function Checkout() {
     setTransportadoraElegida(null)
 
     try {
+      console.log('[Checkout] cotizando con city_dane:', ciudadDane, '| ciudadValidada:', ciudadValidada)
       const { data, error: fnError } = await supabase.functions.invoke('heka-cotizar', {
         body: { city_dane: ciudadDane, declared_value: subtotal },
       })
