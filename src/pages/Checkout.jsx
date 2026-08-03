@@ -15,7 +15,7 @@ const WHATSAPP_URL = 'https://wa.me/573046789119?text=Hola%2C%20necesito%20ayuda
 const LOGOS_TRANSPORTADORA = {
   interrapidisimo: 'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20interrapidisimo.png',
   coordinadora:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20coordinadora.avif',
-  servientrega:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/lgo-servientrega-1.webp',
+  servientrega:    'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo%20servientrega.webp',
   tcc:             'https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/Logo_TCC.svg.webp',
 }
 
@@ -385,8 +385,7 @@ export default function Checkout() {
                         src={getLogoTransportadora(c.transportadora)}
                         alt=""
                         className="envio-opcion-logo"
-                        style={c.transportadora.toLowerCase() === 'servientrega' ? { width: 112, height: 112 } : undefined}
-                        onError={(e) => { e.currentTarget.style.display = 'none' }}
+onError={(e) => { e.currentTarget.style.display = 'none' }}
                       />
                     )}
                     <div>
