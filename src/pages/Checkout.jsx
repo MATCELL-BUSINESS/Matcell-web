@@ -226,6 +226,7 @@ export default function Checkout() {
         subtotal,
         costoEnvio,
         transportadoraElegida: transportadoraElegida?.transportadora ?? null,
+        ciudadDane: ciudadDane ?? null,
         usuarioId: user?.id ?? null,
       })
     } catch (err) {

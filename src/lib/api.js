@@ -368,6 +368,7 @@ export async function crearPedido({
   subtotal,
   costoEnvio,
   transportadoraElegida,
+  ciudadDane,
   usuarioId,
 }) {
   // El rol público solo tiene permiso de INSERT (nunca SELECT) sobre pedidos,
@@ -387,6 +388,7 @@ export async function crearPedido({
     direccion: datosCliente.direccion,
     departamento: datosCliente.departamento,
     ciudad: datosCliente.ciudad,
+    ciudad_dane: ciudadDane ?? null,
     metodo_envio: envio.metodo,
     costo_envio: costoEnvio,
     transportadora_elegida: transportadoraElegida ?? null,
