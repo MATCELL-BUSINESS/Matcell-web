@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FiCheck, FiMapPin, FiInfo, FiAlertCircle } from 'react-icons/fi'
+import { FiCheck, FiMapPin, FiAlertCircle } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { crearPedido } from '../lib/api'
 import { supabase } from '../lib/supabaseClient'
 import { formatCOP } from '../lib/format'
-import { DEPARTAMENTOS, MUNICIPIOS } from '../lib/municipios'
 import './Checkout.css'
 
 const PASOS = ['Datos', 'Envío', 'Pago']
@@ -23,13 +22,14 @@ function getLogoTransportadora(nombre) {
   return LOGOS_TRANSPORTADORA[nombre?.toLowerCase()]
 }
 
-// ── Combobox con búsqueda ─────────────────────────────────────────────────────
-function Combobox({ value, onChange, opciones, placeholder, disabled }) {
-  const [query, setQuery] = useState(value ?? '')
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => { setQuery(value ?? '') }, [value])
+// ── Buscador de ciudad en tiempo real (Heka) ─────────────────────────────────
+function CiudadBuscador({ value, onSelect }) {
+  const [query, setQuery]           = useState(value ?? '')
+  const [sugerencias, setSugerencias] = useState([])
+  const [cargando, setCargando]     = useState(false)
+  const [open, setOpen]             = useState(false)
+  const ref     = useRef(null)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
@@ -39,39 +39,62 @@ function Combobox({ value, onChange, opciones, placeholder, disabled }) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const filtradas = query
-    ? opciones.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
-    : opciones
+  const buscar = (q) => {
+    clearTimeout(timerRef.current)
+    if (q.length < 3) { setSugerencias([]); setOpen(false); return }
+    setCargando(true)
+    timerRef.current = setTimeout(async () => {
+      try {
+        const { data } = await supabase.functions.invoke('heka-cotizar', {
+          body: { accion: 'buscar', query: q },
+        })
+        setSugerencias(data?.ciudades ?? [])
+        setOpen(true)
+      } catch {
+        setSugerencias([])
+      } finally {
+        setCargando(false)
+      }
+    }, 350)
+  }
 
   const handleChange = (e) => {
-    setQuery(e.target.value)
-    onChange(e.target.value)
-    setOpen(true)
+    const q = e.target.value
+    setQuery(q)
+    onSelect(null)
+    buscar(q)
   }
 
-  const handleSelect = (opcion) => {
-    setQuery(opcion)
-    onChange(opcion)
+  const handleSelect = (ciudad) => {
+    setQuery(`${ciudad.label}${ciudad.departamento ? ` (${ciudad.departamento})` : ''}`)
+    onSelect(ciudad)
     setOpen(false)
+    setSugerencias([])
   }
+
+  const sinResultados = open && !cargando && sugerencias.length === 0 && query.length >= 3
 
   return (
     <div className="combobox" ref={ref}>
       <input
         value={query}
         onChange={handleChange}
-        onFocus={() => setOpen(true)}
-        placeholder={placeholder}
-        disabled={disabled}
+        placeholder={cargando ? 'Buscando...' : 'Escribe tu ciudad o municipio...'}
         autoComplete="off"
       />
-      {open && filtradas.length > 0 && (
+      {open && sugerencias.length > 0 && (
         <ul className="combobox-list">
-          {filtradas.slice(0, 60).map((o) => (
-            <li key={o} onMouseDown={() => handleSelect(o)}>
-              {o}
+          {sugerencias.map((c) => (
+            <li key={c.dane} onMouseDown={() => handleSelect(c)}>
+              {c.label}
+              {c.departamento && <span style={{ color: '#aaa', marginLeft: 6, fontSize: 12 }}>({c.departamento})</span>}
             </li>
           ))}
+        </ul>
+      )}
+      {sinResultados && (
+        <ul className="combobox-list">
+          <li style={{ color: '#888', cursor: 'default' }}>No encontramos esa ciudad. Intenta con otro nombre.</li>
         </ul>
       )}
     </div>
@@ -93,6 +116,7 @@ export default function Checkout() {
     departamento: '',
     ciudad: '',
   })
+  const [ciudadValidada, setCiudadValidada] = useState(false)
 
   // ── Estado envío Heka ─────────────────────────────────────────────
   const [cotizaciones, setCotizaciones] = useState([])
@@ -136,17 +160,14 @@ export default function Checkout() {
   const handleCampoInput = (campo) => (e) =>
     setDatosCliente((d) => ({ ...d, [campo]: e.target.value }))
 
-  const handleDepartamento = (depto) => {
-    setDatosCliente((d) => ({ ...d, departamento: depto, ciudad: '' }))
-    // Resetear cotización al cambiar departamento
-    setCotizaciones([])
-    setTransportadoraElegida(null)
-    setErrorEnvio(null)
-  }
-
-  const handleCiudad = (ciudad) => {
-    setCampo('ciudad')(ciudad)
-    // Resetear cotización al cambiar ciudad
+  const handleCiudadHeka = (ciudad) => {
+    if (!ciudad) {
+      setCiudadValidada(false)
+      setDatosCliente((d) => ({ ...d, ciudad: '', departamento: '' }))
+    } else {
+      setCiudadValidada(true)
+      setDatosCliente((d) => ({ ...d, ciudad: ciudad.label, departamento: ciudad.departamento }))
+    }
     setCotizaciones([])
     setTransportadoraElegida(null)
     setErrorEnvio(null)
@@ -156,8 +177,7 @@ export default function Checkout() {
     datosCliente.nombre.trim() &&
     datosCliente.telefono.trim() &&
     datosCliente.direccion.trim() &&
-    datosCliente.departamento.trim() &&
-    datosCliente.ciudad.trim()
+    ciudadValidada
 
   // ── Cotizar con Heka al avanzar al paso 2 ────────────────────────
   const handleSiguienteDatos = async (e) => {
@@ -253,10 +273,6 @@ export default function Checkout() {
     }
   }
 
-  const municipiosDepartamento = datosCliente.departamento
-    ? (MUNICIPIOS[datosCliente.departamento] ?? [])
-    : []
-
   // ── Sidebar: texto de envío ───────────────────────────────────────
   const sidebarEnvio = () => {
     if (transportadoraElegida) return { texto: formatCOP(transportadoraElegida.precio), verde: false }
@@ -306,32 +322,13 @@ export default function Checkout() {
               <input value={datosCliente.direccion} onChange={handleCampoInput('direccion')} required />
             </label>
 
-            <div className="checkout-form-row">
-              <label>
-                Departamento
-                <Combobox
-                  value={datosCliente.departamento}
-                  onChange={handleDepartamento}
-                  opciones={DEPARTAMENTOS}
-                  placeholder="Busca tu departamento..."
-                />
-              </label>
-              <label>
-                Ciudad / Municipio
-                <Combobox
-                  value={datosCliente.ciudad}
-                  onChange={handleCiudad}
-                  opciones={municipiosDepartamento}
-                  placeholder={datosCliente.departamento ? 'Busca tu municipio...' : 'Selecciona primero un departamento'}
-                  disabled={!datosCliente.departamento}
-                />
-              </label>
-            </div>
-
-            <p className="checkout-ciudad-nota">
-              <FiInfo size={13} />
-              ¿No encuentras tu municipio? Escríbelo manualmente. También puedes contactarnos por WhatsApp.
-            </p>
+            <label>
+              Ciudad de entrega
+              <CiudadBuscador
+                value={datosCliente.ciudad}
+                onSelect={handleCiudadHeka}
+              />
+            </label>
 
             <button type="submit" className="btn btn-primary" disabled={!datosValidos}>
               Continuar a envío
