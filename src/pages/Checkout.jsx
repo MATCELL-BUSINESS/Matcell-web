@@ -41,7 +41,7 @@ function CiudadBuscador({ value, onSelect }) {
 
   const buscar = (q) => {
     clearTimeout(timerRef.current)
-    if (q.length < 3) { setSugerencias([]); setOpen(false); return }
+    if (q.length < 2) { setSugerencias([]); setOpen(false); return }
     setCargando(true)
     timerRef.current = setTimeout(async () => {
       try {
