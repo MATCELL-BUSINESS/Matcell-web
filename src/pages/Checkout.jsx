@@ -385,6 +385,7 @@ export default function Checkout() {
                         src={getLogoTransportadora(c.transportadora)}
                         alt=""
                         className="envio-opcion-logo"
+                        style={c.transportadora.toLowerCase() === 'servientrega' ? { width: 112, height: 112 } : undefined}
                         onError={(e) => { e.currentTarget.style.display = 'none' }}
                       />
                     )}
