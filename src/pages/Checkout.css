@@ -67,7 +67,7 @@
   gap: 16px;
 }
 
-.checkout-form label {
+.checkout-form label:not(.envio-opcion) {
   display: flex;
   flex-direction: column;
   gap: 6px;
