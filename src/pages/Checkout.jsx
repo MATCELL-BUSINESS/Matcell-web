@@ -116,6 +116,7 @@ export default function Checkout() {
     ciudad: '',
   })
   const [ciudadValidada, setCiudadValidada] = useState(false)
+  const [ciudadDane, setCiudadDane] = useState(null)
 
   // ── Estado envío Heka ─────────────────────────────────────────────
   const [cotizaciones, setCotizaciones] = useState([])
@@ -162,9 +163,11 @@ export default function Checkout() {
   const handleCiudadHeka = (ciudad) => {
     if (!ciudad) {
       setCiudadValidada(false)
+      setCiudadDane(null)
       setDatosCliente((d) => ({ ...d, ciudad: '', departamento: '' }))
     } else {
       setCiudadValidada(true)
+      setCiudadDane(ciudad.dane)
       setDatosCliente((d) => ({ ...d, ciudad: ciudad.label, departamento: '' }))
     }
     setCotizaciones([])
@@ -191,7 +194,7 @@ export default function Checkout() {
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('heka-cotizar', {
-        body: { city_name: datosCliente.ciudad, declared_value: subtotal },
+        body: { city_dane: ciudadDane, declared_value: subtotal },
       })
       if (fnError || !data) throw fnError ?? new Error('Sin respuesta')
       if (data.error) throw new Error(data.error)
