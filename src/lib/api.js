@@ -12,6 +12,26 @@ export async function getTiendaConfig() {
   return data
 }
 
+export async function getContraentregaConfig() {
+  const { data, error } = await supabase
+    .from('tienda_config')
+    .select(
+      'contraentrega_activa, contraentrega_rango_1_hasta, contraentrega_rango_1_tarifa, contraentrega_rango_2_hasta, contraentrega_rango_2_tarifa, contraentrega_rango_3_hasta, contraentrega_rango_3_tarifa, contraentrega_rango_4_tarifa'
+    )
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export function calcularRecargoContraentrega(subtotal, config) {
+  if (!config?.contraentrega_activa) return 0
+  if (subtotal <= config.contraentrega_rango_1_hasta) return config.contraentrega_rango_1_tarifa
+  if (subtotal <= config.contraentrega_rango_2_hasta) return config.contraentrega_rango_2_tarifa
+  if (subtotal <= config.contraentrega_rango_3_hasta) return config.contraentrega_rango_3_tarifa
+  return config.contraentrega_rango_4_tarifa
+}
+
 export async function getCategoriasActivas() {
   const { data, error } = await supabase
     .from('categorias')
@@ -370,13 +390,16 @@ export async function crearPedido({
   transportadoraElegida,
   ciudadDane,
   usuarioId,
+  metodoPago = 'wompi',
+  recargoContraentrega = 0,
+  estadoPago = 'pendiente',
 }) {
   // El rol público solo tiene permiso de INSERT (nunca SELECT) sobre pedidos,
   // así que no podemos usar .select() después del insert para recuperar el id
   // generado por la base — lo generamos aquí mismo y lo insertamos explícito.
   const pedidoId = crypto.randomUUID()
   const numero_pedido = generarNumeroPedido()
-  const total = subtotal + costoEnvio
+  const total = subtotal + costoEnvio + recargoContraentrega
 
   const { error: errorPedido } = await supabase.from('pedidos').insert({
     id: pedidoId,
@@ -394,8 +417,10 @@ export async function crearPedido({
     transportadora_elegida: transportadoraElegida ?? null,
     subtotal,
     total,
+    metodo_pago: metodoPago,
+    recargo_contraentrega: recargoContraentrega,
     estado_pedido: 'confirmado',
-    estado_pago: 'pendiente',
+    estado_pago: estadoPago,
   })
 
   if (errorPedido) throw errorPedido

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { FiCheck, FiMapPin, FiAlertCircle } from 'react-icons/fi'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { crearPedido } from '../lib/api'
+import { crearPedido, getContraentregaConfig, calcularRecargoContraentrega } from '../lib/api'
 import { supabase } from '../lib/supabaseClient'
 import { formatCOP } from '../lib/format'
 import './Checkout.css'
@@ -124,9 +124,17 @@ export default function Checkout() {
   const [errorEnvio, setErrorEnvio] = useState(null)
   const [transportadoraElegida, setTransportadoraElegida] = useState(null)
 
+  // ── Contraentrega ─────────────────────────────────────────────────
+  const [configContraentrega, setConfigContraentrega] = useState(null)
+  const [metodoPago, setMetodoPago] = useState('wompi')
+
   // ── Estado pago ───────────────────────────────────────────────────
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    getContraentregaConfig().then(setConfigContraentrega).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -151,8 +159,12 @@ export default function Checkout() {
     )
   }
 
+  const soloAccesorios = items.length > 0 && items.every((i) => i.categoriaSlug === 'accesorios')
+  const recargoContra = soloAccesorios && metodoPago === 'contraentrega'
+    ? calcularRecargoContraentrega(subtotal, configContraentrega)
+    : 0
   const costoEnvio = transportadoraElegida?.precio ?? 0
-  const total = subtotal + costoEnvio
+  const total = subtotal + costoEnvio + recargoContra
 
   const setCampo = (campo) => (valor) =>
     setDatosCliente((d) => ({ ...d, [campo]: valor }))
@@ -211,6 +223,52 @@ export default function Checkout() {
   const handleSiguienteEnvio = () => {
     if (!transportadoraElegida) return
     setPaso(3)
+  }
+
+  const handleConfirmarContraentrega = async () => {
+    setEnviando(true)
+    setError(null)
+    try {
+      const pedido = await crearPedido({
+        datosCliente,
+        envio: { metodo: 'nacional' },
+        items,
+        subtotal,
+        costoEnvio,
+        transportadoraElegida: transportadoraElegida?.transportadora ?? null,
+        ciudadDane,
+        usuarioId: user?.id ?? null,
+        metodoPago: 'contraentrega',
+        recargoContraentrega: recargoContra,
+        estadoPago: 'pendiente_contraentrega',
+      })
+
+      const lineas = items
+        .map((i) => `  • ${i.nombre}${i.color ? ` (${i.color})` : ''} x${i.cantidad}`)
+        .join('\n')
+      const mensaje =
+        `🛍️ Nuevo pedido MatCell — CONTRAENTREGA\n\n` +
+        `📦 Pedido: ${pedido.numero_pedido}\n` +
+        `👤 Cliente: ${datosCliente.nombre}\n` +
+        `📱 Teléfono: ${datosCliente.telefono}\n` +
+        `📍 Dirección: ${datosCliente.direccion}, ${datosCliente.ciudad}\n` +
+        `🛒 Productos:\n${lineas}\n` +
+        `💰 Total a recaudar: ${formatCOP(pedido.total)}\n` +
+        `🚚 Transportadora: ${transportadoraElegida?.transportadora ?? 'Por definir'}\n\n` +
+        `⚠️ Este pedido es CONTRAENTREGA — el cliente paga al recibir.`
+
+      await supabase.functions.invoke('notificar-whatsapp', { body: { mensaje } })
+
+      clearCart()
+      navigate(`/pedido-confirmado?pedido=${pedido.numero_pedido}`, {
+        state: { numeroPedido: pedido.numero_pedido, total: pedido.total, nombre: datosCliente.nombre },
+      })
+    } catch (err) {
+      console.error(err)
+      setError('No pudimos confirmar tu pedido. Intenta de nuevo en unos segundos.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const handlePagar = async () => {
@@ -398,6 +456,50 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
               </div>
             )}
 
+            {transportadoraElegida && (
+              <div className="metodo-pago-wrap">
+                <h3 className="metodo-pago-titulo">Método de pago</h3>
+                <div className="metodo-pago-opciones">
+                  <label className={`metodo-pago-opcion${metodoPago === 'wompi' ? ' seleccionado' : ''}`}>
+                    <input
+                      type="radio"
+                      name="metodoPago"
+                      checked={metodoPago === 'wompi'}
+                      onChange={() => setMetodoPago('wompi')}
+                    />
+                    <div className="metodo-pago-info">
+                      <p className="metodo-pago-nombre">Pagar ahora con Wompi</p>
+                      <p className="metodo-pago-desc">Tarjeta, PSE, Nequi, Bancolombia. Seguro y rápido.</p>
+                      {soloAccesorios && configContraentrega?.contraentrega_activa && (
+                        <span className="metodo-pago-ahorro">
+                          Ahorras {formatCOP(calcularRecargoContraentrega(subtotal, configContraentrega))}
+                        </span>
+                      )}
+                    </div>
+                    <span className="metodo-pago-precio">{formatCOP(subtotal + costoEnvio)}</span>
+                  </label>
+
+                  {soloAccesorios && configContraentrega?.contraentrega_activa && (
+                    <label className={`metodo-pago-opcion${metodoPago === 'contraentrega' ? ' seleccionado' : ''}`}>
+                      <input
+                        type="radio"
+                        name="metodoPago"
+                        checked={metodoPago === 'contraentrega'}
+                        onChange={() => setMetodoPago('contraentrega')}
+                      />
+                      <div className="metodo-pago-info">
+                        <p className="metodo-pago-nombre">Pagar al recibir (Contraentrega)</p>
+                        <p className="metodo-pago-desc">Pagas cuando llegue tu pedido a casa.</p>
+                      </div>
+                      <span className="metodo-pago-precio">
+                        {formatCOP(subtotal + costoEnvio + calcularRecargoContraentrega(subtotal, configContraentrega))}
+                      </span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="checkout-form-actions">
               <button className="btn btn-secondary" onClick={() => setPaso(1)}>Volver</button>
               <button
@@ -412,7 +514,7 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
         )}
 
         {/* ── Paso 3: Pago ── */}
-        {paso === 3 && (
+        {paso === 3 && metodoPago === 'wompi' && (
           <div className="checkout-form">
             <h2>Pago</h2>
 
@@ -454,6 +556,44 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
           </div>
         )}
 
+        {paso === 3 && metodoPago === 'contraentrega' && (
+          <div className="checkout-form">
+            <h2>Confirmar pedido</h2>
+
+            <div className="checkout-resumen">
+              <div className="checkout-resumen-row">
+                <span>Subtotal</span>
+                <span>{formatCOP(subtotal)}</span>
+              </div>
+              <div className="checkout-resumen-row">
+                <span>Envío · {transportadoraElegida?.transportadora}</span>
+                <span>{formatCOP(costoEnvio)}</span>
+              </div>
+              <div className="checkout-resumen-row">
+                <span>Tarifa contraentrega</span>
+                <span>{formatCOP(recargoContra)}</span>
+              </div>
+              <div className="checkout-resumen-row total">
+                <span>Total a pagar al recibir</span>
+                <span>{formatCOP(total)}</span>
+              </div>
+            </div>
+
+            <div className="contraentrega-aviso">
+              <p>Pagarás <strong>{formatCOP(total)}</strong> en efectivo directamente al mensajero cuando llegue tu pedido.</p>
+            </div>
+
+            {error && <p className="checkout-error">{error}</p>}
+
+            <div className="checkout-form-actions">
+              <button className="btn btn-secondary" onClick={() => setPaso(2)} disabled={enviando}>Volver</button>
+              <button className="btn btn-primary btn-contraentrega" onClick={handleConfirmarContraentrega} disabled={enviando}>
+                {enviando ? 'Confirmando...' : `Confirmar pedido · ${formatCOP(total)}`}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Sidebar ── */}
         <div className="checkout-summary-side">
           <h3>Tu pedido</h3>
@@ -476,6 +616,12 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
               {envioSidebar.texto}
             </span>
           </div>
+          {recargoContra > 0 && (
+            <div className="checkout-summary-row">
+              <span>Tarifa contraentrega</span>
+              <span>{formatCOP(recargoContra)}</span>
+            </div>
+          )}
           <div className="checkout-summary-row total">
             <span>Total</span>
             <span>{formatCOP(total)}</span>
