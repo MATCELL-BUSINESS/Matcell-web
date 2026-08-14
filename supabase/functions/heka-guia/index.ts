@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
 
     // ── 3. Crear guía ─────────────────────────────────────────────────────────
     if (action === 'crear_guia') {
-      const { pedido_id, distributor_id, warehouse_id } = body
+      const { pedido_id, distributor_id, warehouse_id, es_contraentrega } = body
       if (!pedido_id || !distributor_id || !warehouse_id) {
         return json({ error: 'Faltan campos requeridos: pedido_id, distributor_id, warehouse_id' }, 400)
       }
@@ -161,6 +161,10 @@ Deno.serve(async (req) => {
 
       const token = await getToken()
 
+      const esContra = Boolean(es_contraentrega) || pedido.metodo_pago === 'contraentrega'
+      const typePayment = esContra ? 1 : 3
+      const collectionValue = esContra ? Number(pedido.total ?? 0) : 0
+
       const guideRes = await fetch(`${HEKA_HOST}/api/v1/shipments/guide`, {
         method: 'POST',
         headers: {
@@ -172,12 +176,12 @@ Deno.serve(async (req) => {
           type: 1,
           city_origin: CITY_ORIGIN,
           city_destination: cityDestination,
-          type_payment: 3,
+          type_payment: typePayment,
           total: pedido.costo_envio ?? 0,
           declared_value: pedido.subtotal ?? 0,
           weight: 1, height: 16, long: 22, width: 11,
           withshipping_cost: true,
-          collection_value: 0,
+          collection_value: collectionValue,
           distributor_id,
           warehouse: warehouse_id,
           quantity: 1,
