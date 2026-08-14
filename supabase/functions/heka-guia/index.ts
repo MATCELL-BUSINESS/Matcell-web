@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+﻿import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,17 +28,21 @@ async function getToken(): Promise<string> {
     return cached.token
   }
 
-  const loginRes = await fetch(`${HEKA_HOST}/api/v1/auth`, {
+  const loginRes = await fetch(`${HEKA_HOST}/api/v1/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'api-key': HEKA_API_KEY },
-    body: JSON.stringify({ email: HEKA_EMAIL, password: HEKA_PASSWORD }),
+    body: JSON.stringify({ email: HEKA_EMAIL, password: HEKA_PASSWORD, channel: 'hekaentrega' }),
   })
-  if (!loginRes.ok) throw new Error('No se pudo autenticar con Heka')
+  if (!loginRes.ok) {
+    const errBody = await loginRes.text()
+    throw new Error(`Auth Heka ${loginRes.status}: ${errBody}`)
+  }
   const loginData = await loginRes.json()
   const token: string = loginData.response?.token ?? loginData.token
-  if (!token) throw new Error('Heka no devolvió token de autenticación')
+  if (!token) throw new Error(`Heka no devolvió token. Respuesta: ${JSON.stringify(loginData)}`)
 
-  const expiresAt = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString()
+  // Token dura 7 días — cacheamos 6 días con margen
+  const expiresAt = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString()
   await sb.from('heka_token').upsert({ id: 1, token, expires_at: expiresAt })
   return token
 }
@@ -47,8 +51,12 @@ async function getToken(): Promise<string> {
 async function resolveCityDane(pedido: Record<string, unknown>): Promise<string> {
   if (pedido.ciudad_dane) return String(pedido.ciudad_dane)
 
+  // Heka almacena ciudades en mayúsculas sin tildes (ej. MEDELLIN, BOGOTA)
+  const ciudadNorm = String(pedido.ciudad ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
   const cityRes = await fetch(
-    `${HEKA_HOST}/api/v1/geolocation/city?label=${encodeURIComponent(String(pedido.ciudad ?? ''))}`,
+    `${HEKA_HOST}/api/v1/geolocation/city?label=${encodeURIComponent(ciudadNorm)}`,
     { headers: { 'api-key': HEKA_API_KEY } },
   )
   if (!cityRes.ok) throw new Error('No se pudo buscar la ciudad en Heka')
@@ -188,8 +196,7 @@ Deno.serve(async (req) => {
 
       const guideData = await guideRes.json()
       if (!guideRes.ok) {
-        const msg = guideData?.message ?? guideData?.error ?? JSON.stringify(guideData)
-        throw new Error(`Heka: ${msg}`)
+        throw new Error(`Heka ${guideRes.status}: ${JSON.stringify(guideData)}`)
       }
 
       const guideNumber = String(
@@ -209,6 +216,41 @@ Deno.serve(async (req) => {
       }).eq('id', pedido_id)
 
       return json({ guide_number: guideNumber, shipment_id: shipmentId })
+    }
+
+    // ── 4. Descargar PDF de guía ──────────────────────────────────────────────
+    if (action === 'descargar_pdf') {
+      const { shipment_id } = body
+      if (!shipment_id) return json({ error: 'shipment_id requerido' }, 400)
+
+      const token = await getToken()
+      const res = await fetch(`${HEKA_HOST}/api/v1/documents/sticker?type=guide`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'api-key': HEKA_API_KEY,
+        },
+        body: JSON.stringify({ guides: [shipment_id] }),
+      })
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`Heka ${res.status}: ${errText}`)
+      }
+
+      const contentType = res.headers.get('content-type') ?? ''
+      if (contentType.includes('pdf') || contentType.includes('octet-stream')) {
+        const buffer = await res.arrayBuffer()
+        const bytes = new Uint8Array(buffer)
+        let binary = ''
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+        return json({ tipo: 'pdf_base64', contenido: btoa(binary) })
+      }
+
+      const data = await res.json()
+      const url = data.response?.url ?? data.response?.pdf ?? data.url
+      if (url) return json({ tipo: 'url', contenido: url })
+      return json({ tipo: 'json', contenido: data.response ?? data })
     }
 
     return json({ error: 'Acción no reconocida' }, 400)
