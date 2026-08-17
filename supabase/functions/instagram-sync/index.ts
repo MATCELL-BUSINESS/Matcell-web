@@ -55,15 +55,17 @@ Deno.serve(async (req) => {
 
     const posts = (igData.data ?? []).slice(0, MEDIA_LIMIT)
 
-    const rows = posts.map((post: Record<string, string>, index: number) => ({
-      ig_media_id: post.id,
-      caption: post.caption ?? null,
-      media_type: post.media_type ?? null,
-      media_url: post.media_url,
-      thumbnail_url: post.thumbnail_url ?? null,
-      permalink: post.permalink,
-      orden: index,
-    }))
+    const rows = posts
+      .map((post: Record<string, string>, index: number) => ({
+        ig_media_id: post.id,
+        caption: post.caption ?? null,
+        media_type: post.media_type ?? null,
+        media_url: post.media_url ?? post.thumbnail_url ?? null,
+        thumbnail_url: post.thumbnail_url ?? null,
+        permalink: post.permalink,
+        orden: index,
+      }))
+      .filter((row) => row.media_url !== null)
 
     if (rows.length > 0) {
       const { error: upsertError } = await supabase
