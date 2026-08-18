@@ -67,7 +67,7 @@
   gap: 16px;
 }
 
-.checkout-form label:not(.envio-opcion) {
+.checkout-form label:not(.envio-opcion):not(.metodo-pago-opcion) {
   display: flex;
   flex-direction: column;
   gap: 6px;
