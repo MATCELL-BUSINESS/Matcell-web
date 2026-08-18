@@ -467,16 +467,24 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
                       checked={metodoPago === 'wompi'}
                       onChange={() => setMetodoPago('wompi')}
                     />
+                    <img
+                      src="https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/logo-wompi.png"
+                      alt=""
+                      className="metodo-pago-logo"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
                     <div className="metodo-pago-info">
                       <p className="metodo-pago-nombre">Pagar ahora con Wompi</p>
                       <p className="metodo-pago-desc">Tarjeta, PSE, Nequi, Bancolombia. Seguro y rápido.</p>
+                    </div>
+                    <div className="metodo-pago-precios">
                       {soloAccesorios && configContraentrega?.contraentrega_activa && (
-                        <span className="metodo-pago-ahorro">
-                          Ahorras {formatCOP(calcularRecargoContraentrega(subtotal, configContraentrega))}
+                        <span className="metodo-pago-precio-tachado">
+                          {formatCOP(subtotal + costoEnvio + calcularRecargoContraentrega(subtotal, configContraentrega))}
                         </span>
                       )}
+                      <span className="metodo-pago-precio">{formatCOP(subtotal + costoEnvio)}</span>
                     </div>
-                    <span className="metodo-pago-precio">{formatCOP(subtotal + costoEnvio)}</span>
                   </label>
 
                   {soloAccesorios && configContraentrega?.contraentrega_activa && (
@@ -486,6 +494,12 @@ onError={(e) => { e.currentTarget.style.display = 'none' }}
                         name="metodoPago"
                         checked={metodoPago === 'contraentrega'}
                         onChange={() => setMetodoPago('contraentrega')}
+                      />
+                      <img
+                        src="https://qdclzxubnanrbyutcngc.supabase.co/storage/v1/object/public/assets/icono-contraentrega.png"
+                        alt=""
+                        className="metodo-pago-logo"
+                        onError={(e) => { e.currentTarget.style.display = 'none' }}
                       />
                       <div className="metodo-pago-info">
                         <p className="metodo-pago-nombre">Pagar al recibir (Contraentrega)</p>
