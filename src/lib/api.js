@@ -26,10 +26,10 @@ export async function getContraentregaConfig() {
 
 export function calcularRecargoContraentrega(subtotal, config) {
   if (!config?.contraentrega_activa) return 0
-  if (subtotal <= config.contraentrega_rango_1_hasta) return config.contraentrega_rango_1_tarifa
-  if (subtotal <= config.contraentrega_rango_2_hasta) return config.contraentrega_rango_2_tarifa
-  if (subtotal <= config.contraentrega_rango_3_hasta) return config.contraentrega_rango_3_tarifa
-  return config.contraentrega_rango_4_tarifa
+  if (subtotal <= config.contraentrega_rango_1_hasta) return Number(config.contraentrega_rango_1_tarifa) || 0
+  if (subtotal <= config.contraentrega_rango_2_hasta) return Number(config.contraentrega_rango_2_tarifa) || 0
+  if (subtotal <= config.contraentrega_rango_3_hasta) return Number(config.contraentrega_rango_3_tarifa) || 0
+  return Number(config.contraentrega_rango_4_tarifa) || 0
 }
 
 export async function getCategoriasActivas() {

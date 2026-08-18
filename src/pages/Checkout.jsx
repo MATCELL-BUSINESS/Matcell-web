@@ -229,7 +229,7 @@ export default function Checkout() {
     setEnviando(true)
     setError(null)
     try {
-      const params = {
+      const pedido = await crearPedido({
         datosCliente,
         envio: { metodo: 'nacional' },
         items,
@@ -241,9 +241,7 @@ export default function Checkout() {
         metodoPago: 'contraentrega',
         recargoContraentrega: recargoContra,
         estadoPago: 'pendiente_contraentrega',
-      }
-      console.log('[contraentrega] params crearPedido:', JSON.stringify(params, null, 2))
-      const pedido = await crearPedido(params)
+      })
 
       const lineas = items
         .map((i) => `  • ${i.nombre}${i.color ? ` (${i.color})` : ''} x${i.cantidad}`)
@@ -266,7 +264,7 @@ export default function Checkout() {
         state: { numeroPedido: pedido.numero_pedido, total: pedido.total, nombre: datosCliente.nombre },
       })
     } catch (err) {
-      console.error('[contraentrega] ERROR:', err?.message, err?.details, err?.hint, err)
+      console.error(err)
       setError('No pudimos confirmar tu pedido. Intenta de nuevo en unos segundos.')
     } finally {
       setEnviando(false)
