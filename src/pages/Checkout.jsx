@@ -229,6 +229,11 @@ export default function Checkout() {
     setEnviando(true)
     setError(null)
     try {
+      console.log('[CE] recargo:', recargoContra)
+      console.log('[CE] total:', total)
+      console.log('[CE] costoEnvio:', costoEnvio)
+      console.log('[CE] transportadora:', transportadoraElegida)
+      console.log('[CE] datosCliente:', datosCliente)
       const pedido = await crearPedido({
         datosCliente,
         envio: { metodo: 'nacional' },
@@ -242,6 +247,7 @@ export default function Checkout() {
         recargoContraentrega: recargoContra,
         estadoPago: 'pendiente_contraentrega',
       })
+      console.log('[CE] resultado crearPedido:', pedido)
 
       const lineas = items
         .map((i) => `  • ${i.nombre}${i.color ? ` (${i.color})` : ''} x${i.cantidad}`)
@@ -264,7 +270,7 @@ export default function Checkout() {
         state: { numeroPedido: pedido.numero_pedido, total: pedido.total, nombre: datosCliente.nombre },
       })
     } catch (err) {
-      console.error(err)
+      console.error('[CE] ERROR:', err?.message, err?.details, err?.hint, err?.code, err)
       setError('No pudimos confirmar tu pedido. Intenta de nuevo en unos segundos.')
     } finally {
       setEnviando(false)
