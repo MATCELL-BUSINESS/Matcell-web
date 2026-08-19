@@ -272,7 +272,12 @@ Deno.serve(async (req) => {
       const data = await res.json()
       const url = data.response?.url ?? data.response?.pdf ?? data.url
       if (url) return json({ tipo: 'url', contenido: url })
-      return json({ tipo: 'json', contenido: data.response ?? data })
+      // Heka produccion devuelve el PDF como base64 directamente en response
+      const rawContent = data.response ?? data
+      if (typeof rawContent === 'string' && rawContent.startsWith('JVBERi0')) {
+        return json({ tipo: 'pdf_base64', contenido: rawContent })
+      }
+      return json({ tipo: 'json', contenido: rawContent })
     }
 
     return json({ error: 'Accion no reconocida' }, 400)
