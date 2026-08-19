@@ -9,6 +9,7 @@ const HEKA_HOST     = Deno.env.get('HEKA_HOST')!
 const HEKA_EMAIL    = Deno.env.get('HEKA_EMAIL')!
 const HEKA_PASSWORD = Deno.env.get('HEKA_PASSWORD')!
 const HEKA_API_KEY  = Deno.env.get('HEKA_API_KEY')!
+const HEKA_USER_ID  = Deno.env.get('HEKA_USER_ID') ?? ''
 const CITY_ORIGIN   = Deno.env.get('HEKA_CITY_ORIGIN') ?? '47189000'
 
 const sb = createClient(
@@ -27,11 +28,19 @@ async function getTokenData(): Promise<{ token: string; userId: string }> {
     return { token: cached.token, userId: cached.user_id ?? '' }
   }
 
-  const loginRes = await fetch(`${HEKA_HOST}/api/v1/user/login`, {
+  // Intenta login sin channel primero, luego con hekaentrega
+  let loginRes = await fetch(`${HEKA_HOST}/api/v1/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'api-key': HEKA_API_KEY },
-    body: JSON.stringify({ email: HEKA_EMAIL, password: HEKA_PASSWORD, channel: 'hekaentrega' }),
+    body: JSON.stringify({ email: HEKA_EMAIL, password: HEKA_PASSWORD }),
   })
+  if (!loginRes.ok) {
+    loginRes = await fetch(`${HEKA_HOST}/api/v1/user/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'api-key': HEKA_API_KEY },
+      body: JSON.stringify({ email: HEKA_EMAIL, password: HEKA_PASSWORD, channel: 'hekaentrega' }),
+    })
+  }
   if (!loginRes.ok) {
     const errBody = await loginRes.text()
     throw new Error(`Auth Heka ${loginRes.status}: ${errBody}`)
@@ -84,8 +93,9 @@ Deno.serve(async (req) => {
 
     if (action === 'listar_bodegas') {
       const { token, userId } = await getTokenData()
-      const warehouseUrl = userId
-        ? `${HEKA_HOST}/api/v1/warehouse?user=${userId}`
+      const effectiveUserId = userId || HEKA_USER_ID
+      const warehouseUrl = effectiveUserId
+        ? `${HEKA_HOST}/api/v1/warehouse?user=${effectiveUserId}`
         : `${HEKA_HOST}/api/v1/warehouse`
       const res = await fetch(warehouseUrl, {
         headers: { Authorization: `Bearer ${token}`, 'api-key': HEKA_API_KEY },
