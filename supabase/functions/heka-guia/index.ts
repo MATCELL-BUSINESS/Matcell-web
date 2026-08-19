@@ -41,8 +41,8 @@ async function getTokenData(): Promise<{ token: string; userId: string }> {
   if (!token) throw new Error(`Heka no devolvio token. Respuesta: ${JSON.stringify(loginData)}`)
 
   const userId: string =
+    loginData.response?.userId ??
     loginData.response?.user?._id ??
-    loginData.response?.user?.id ??
     loginData.response?.id ??
     ''
 
