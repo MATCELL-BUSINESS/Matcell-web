@@ -217,12 +217,18 @@ Deno.serve(async (req) => {
       }
 
       const guideNumber = String(
+        guideData.response?.guide ??
         guideData.response?.guide_number ??
         guideData.response?.number ??
         guideData.guide_number ??
         '',
       )
-      const shipmentId = String(guideData.response?.id ?? guideData.id ?? '')
+      const shipmentId = String(
+        guideData.response?._id ??
+        guideData.response?.id ??
+        guideData.id ??
+        '',
+      )
       if (!guideNumber) throw new Error('Heka no devolvio numero de guia en la respuesta')
 
       await sb.from('pedidos').update({
