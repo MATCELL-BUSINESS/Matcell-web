@@ -16,16 +16,15 @@ const sb = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-// ── Token Bearer cacheado en tabla heka_token ─────────────────────────────────
-async function getToken(): Promise<string> {
+async function getTokenData(): Promise<{ token: string; userId: string }> {
   const { data: cached } = await sb
     .from('heka_token')
-    .select('token, expires_at')
+    .select('token, expires_at, user_id')
     .eq('id', 1)
     .maybeSingle()
 
   if (cached && new Date(cached.expires_at) > new Date(Date.now() + 60_000)) {
-    return cached.token
+    return { token: cached.token, userId: cached.user_id ?? '' }
   }
 
   const loginRes = await fetch(`${HEKA_HOST}/api/v1/user/login`, {
@@ -39,19 +38,22 @@ async function getToken(): Promise<string> {
   }
   const loginData = await loginRes.json()
   const token: string = loginData.response?.token ?? loginData.token
-  if (!token) throw new Error(`Heka no devolvió token. Respuesta: ${JSON.stringify(loginData)}`)
+  if (!token) throw new Error(`Heka no devolvio token. Respuesta: ${JSON.stringify(loginData)}`)
 
-  // Token dura 7 días — cacheamos 6 días con margen
+  const userId: string =
+    loginData.response?.user?._id ??
+    loginData.response?.user?.id ??
+    loginData.response?.id ??
+    ''
+
   const expiresAt = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString()
-  await sb.from('heka_token').upsert({ id: 1, token, expires_at: expiresAt })
-  return token
+  await sb.from('heka_token').upsert({ id: 1, token, expires_at: expiresAt, user_id: userId })
+  return { token, userId }
 }
 
-// ── Resuelve código DANE: directo si existe, fallback por nombre ──────────────
 async function resolveCityDane(pedido: Record<string, unknown>): Promise<string> {
   if (pedido.ciudad_dane) return String(pedido.ciudad_dane)
 
-  // Heka almacena ciudades en mayúsculas sin tildes (ej. MEDELLIN, BOGOTA)
   const ciudadNorm = String(pedido.ciudad ?? '')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
@@ -73,7 +75,6 @@ function json(data: unknown, status = 200) {
   })
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -81,19 +82,20 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action } = body
 
-    // ── 1. Listar bodegas ─────────────────────────────────────────────────────
     if (action === 'listar_bodegas') {
-      const token = await getToken()
-      const res = await fetch(`${HEKA_HOST}/api/v1/warehouse`, {
+      const { token, userId } = await getTokenData()
+      const warehouseUrl = userId
+        ? `${HEKA_HOST}/api/v1/warehouse?user=${userId}`
+        : `${HEKA_HOST}/api/v1/warehouse`
+      const res = await fetch(warehouseUrl, {
         headers: { Authorization: `Bearer ${token}`, 'api-key': HEKA_API_KEY },
       })
       if (!res.ok) throw new Error('No se pudieron obtener las bodegas de Heka')
       const data = await res.json()
-      const bodegas: Record<string, unknown>[] = data.response ?? data ?? []
+      const bodegas: Record<string, unknown>[] = data.response?.rows ?? data.response ?? data ?? []
       return json({ bodegas })
     }
 
-    // ── 2. Listar transportadoras disponibles para el pedido ──────────────────
     if (action === 'listar_transportadoras') {
       const { pedido_id } = body
       const { data: pedido, error: pe } = await sb
@@ -133,7 +135,6 @@ Deno.serve(async (req) => {
       return json({ transportadoras })
     }
 
-    // ── 3. Crear guía ─────────────────────────────────────────────────────────
     if (action === 'crear_guia') {
       const { pedido_id, distributor_id, warehouse_id, es_contraentrega } = body
       if (!pedido_id || !distributor_id || !warehouse_id) {
@@ -159,7 +160,7 @@ Deno.serve(async (req) => {
       const firstName = nombreParts[0] ?? ''
       const lastName  = nombreParts.slice(1).join(' ') || firstName
 
-      const token = await getToken()
+      const { token } = await getTokenData()
 
       const esContra = Boolean(es_contraentrega) || pedido.metodo_pago === 'contraentrega'
       const typePayment = esContra ? 1 : 3
@@ -182,6 +183,8 @@ Deno.serve(async (req) => {
           weight: 1, height: 16, long: 22, width: 11,
           withshipping_cost: true,
           collection_value: collectionValue,
+          collection_request: false,
+          in_order_form: false,
           distributor_id,
           warehouse: warehouse_id,
           quantity: 1,
@@ -190,7 +193,7 @@ Deno.serve(async (req) => {
             name: firstName,
             last_name: lastName,
             address: pedido.direccion ?? '',
-            phone: String(pedido.cliente_telefono ?? ''),
+            phone: Number(pedido.cliente_telefono),
             neighborhood: pedido.ciudad ?? '',
             type_document: 'CC',
             document: '000000',
@@ -210,7 +213,7 @@ Deno.serve(async (req) => {
         '',
       )
       const shipmentId = String(guideData.response?.id ?? guideData.id ?? '')
-      if (!guideNumber) throw new Error('Heka no devolvió número de guía en la respuesta')
+      if (!guideNumber) throw new Error('Heka no devolvio numero de guia en la respuesta')
 
       await sb.from('pedidos').update({
         heka_guide_number: guideNumber,
@@ -222,12 +225,11 @@ Deno.serve(async (req) => {
       return json({ guide_number: guideNumber, shipment_id: shipmentId })
     }
 
-    // ── 4. Descargar PDF de guía ──────────────────────────────────────────────
     if (action === 'descargar_pdf') {
       const { shipment_id } = body
       if (!shipment_id) return json({ error: 'shipment_id requerido' }, 400)
 
-      const token = await getToken()
+      const { token } = await getTokenData()
       const res = await fetch(`${HEKA_HOST}/api/v1/documents/sticker?type=guide`, {
         method: 'POST',
         headers: {
@@ -257,7 +259,7 @@ Deno.serve(async (req) => {
       return json({ tipo: 'json', contenido: data.response ?? data })
     }
 
-    return json({ error: 'Acción no reconocida' }, 400)
+    return json({ error: 'Accion no reconocida' }, 400)
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
