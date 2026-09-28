@@ -38,20 +38,12 @@ const SECCIONES = [
     titulo: 'Envíos',
     contenido: (
       <div className="acordeon-cuerpo-envios">
+        <p>Enviamos a todo Colombia con Coordinadora, Servientrega e Interrapidísimo. Tiempo estimado: 3–5 días hábiles según tu ciudad.</p>
         <div className="acordeon-despacho-box">
-          <span className="acordeon-despacho-icono">🚀</span>
-          <div>
-            <p className="acordeon-despacho-titulo">Despacho en 24–48 horas hábiles</p>
-            <p className="acordeon-despacho-sub">Una vez confirmado tu pago, preparamos y enviamos tu pedido en 1 a 2 días hábiles.</p>
-          </div>
+          <p>Pide antes de las 3pm — despachamos el mismo día hábil.</p>
+          <p>Pide después de las 3pm — despachamos el siguiente día hábil a primera hora.</p>
         </div>
-        <ul>
-          <li><strong>Envío a todo Colombia</strong> a través de nuestras transportadoras aliadas.</li>
-          <li><strong>Tiempo de entrega:</strong> entre 2 y 5 días hábiles según tu ciudad.</li>
-          <li><strong>Seguimiento en tiempo real:</strong> Te enviamos el número de guía para que puedas rastrear tu pedido.</li>
-          <li><strong>Empaque seguro:</strong> Cada equipo va protegido para evitar cualquier daño durante el transporte.</li>
-          <li><strong>Contraentrega disponible</strong> en ciudades principales (sujeto a disponibilidad).</li>
-        </ul>
+        <p>Recogida gratuita en nuestro punto en Ciénaga, Magdalena.</p>
       </div>
     ),
   },
@@ -68,17 +60,16 @@ const SECCIONES = [
       <div className="acordeon-cuerpo-garantia">
         <div className="acordeon-garantia-cards">
           <div className="acordeon-garantia-card">
-            <div className="acordeon-garantia-card-titulo">🛡️ Garantía de funcionamiento</div>
-            <p><strong>3 meses</strong> de garantía contra fallas de fábrica en todos nuestros equipos reacondicionados.</p>
-            <p>Si el equipo presenta fallas técnicas no relacionadas con daños físicos o por agua, lo reparamos o reemplazamos sin costo adicional.</p>
+            <p className="acordeon-garantia-etiqueta">Equipos nuevos</p>
+            <p className="acordeon-garantia-meses">12 meses</p>
+            <p className="acordeon-garantia-desc">Con centros de servicio oficial del fabricante</p>
           </div>
           <div className="acordeon-garantia-card">
-            <div className="acordeon-garantia-card-titulo">📦 Garantía de satisfacción</div>
-            <p><strong>3 días</strong> para reportar cualquier inconformidad desde que recibes el equipo.</p>
-            <p>Si el producto no coincide con lo descrito, gestionamos un cambio o devolución sin problema.</p>
+            <p className="acordeon-garantia-etiqueta">Equipos seminuevos</p>
+            <p className="acordeon-garantia-meses">3 meses</p>
+            <p className="acordeon-garantia-desc">Directamente con MatCell. Cubre fallas funcionales bajo uso normal.</p>
           </div>
         </div>
-        <p className="acordeon-garantia-nota">⚠️ La garantía no cubre daños físicos, daños por líquidos, intervención por terceros o mal uso del equipo.</p>
       </div>
     ),
   },
