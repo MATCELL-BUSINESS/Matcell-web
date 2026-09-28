@@ -119,7 +119,7 @@ Deno.serve(async (req: Request) => {
     if (pedidoActualizado && nuevoEstadoPago === "aprobado") {
       const { data: items, error: itemsError } = await supabase
         .from("pedido_items")
-        .select("variante_id, cantidad")
+        .select("variante_id, cantidad, nombre_producto")
         .eq("pedido_id", pedidoActualizado.id)
         .not("variante_id", "is", null);
 
@@ -129,16 +129,31 @@ Deno.serve(async (req: Request) => {
         for (const item of items ?? []) {
           const { data: variante } = await supabase
             .from("producto_variantes")
-            .select("stock")
+            .select("stock, producto_id, almacenamiento, modelo_compatible, color")
             .eq("id", item.variante_id)
             .single();
 
           if (variante) {
-            const nuevoStock = Math.max(0, (variante.stock ?? 0) - item.cantidad);
+            const stockAnterior = variante.stock ?? 0;
+            const nuevoStock = Math.max(0, stockAnterior - item.cantidad);
             await supabase
               .from("producto_variantes")
               .update({ stock: nuevoStock })
               .eq("id", item.variante_id);
+
+            const partes = [variante.almacenamiento, variante.modelo_compatible, variante.color].filter(Boolean);
+            await supabase.from("inventario_movimientos").insert({
+              producto_id: variante.producto_id,
+              variante_id: item.variante_id,
+              producto_nombre: item.nombre_producto ?? "",
+              variante_descripcion: partes.join(" · ") || "Sin descripción",
+              stock_anterior: stockAnterior,
+              stock_nuevo: nuevoStock,
+              diferencia: nuevoStock - stockAnterior,
+              motivo: "Venta web",
+              origen: "venta_web",
+              pedido_id: pedidoActualizado.id,
+            });
           }
         }
       }
