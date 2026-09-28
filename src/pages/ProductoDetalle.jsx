@@ -31,6 +31,7 @@ import AsesorModal from '../components/producto/AsesorModal'
 import AccessorySuggestions from '../components/producto/AccessorySuggestions'
 import ProductReviews from '../components/producto/ProductReviews'
 import WhyMatCell from '../components/producto/WhyMatCell'
+import ProductoAcordeon from '../components/producto/ProductoAcordeon'
 import StickyBuyBar from '../components/producto/StickyBuyBar'
 import WishlistHeart from '../components/producto/WishlistHeart'
 import ReviewForm from '../components/resenas/ReviewForm'
@@ -782,6 +783,7 @@ export default function ProductoDetalle() {
         </div>
       </div>
 
+      <ProductoAcordeon />
       <WhyMatCell />
       <ProductReviews resenas={reviewsData.resenas} esEspecifica={reviewsData.esEspecifica} />
 
