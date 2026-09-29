@@ -483,6 +483,20 @@ export default function ProductoDetalle() {
                 })
               }
 
+              // Cuántas veces está seleccionada una variante en TODAS las unidades del bundle
+              // (unidad base + todas las unidades extra, excepto la que estamos evaluando)
+              const vecesSeleccionada = (varianteId, exceptoIdx) => {
+                let count = 0
+                // unidad base
+                if (varianteActiva?.id === varianteId) count++
+                // unidades extra
+                bundleExtraUnidades.forEach((_, i) => {
+                  if (i === exceptoIdx) return
+                  if (getVarianteExtra(i)?.id === varianteId) count++
+                })
+                return count
+              }
+
               // Selector de compatibilidad + color para la unidad extra idx
               const renderSelectorUnidad = (idx) => {
                 const { compat, color } = getExtra(idx)
@@ -519,9 +533,16 @@ export default function ProductoDetalle() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         {!color && <option value="" disabled>Selecciona un color</option>}
-                        {coloresCompat.map((v) => (
-                          <option key={v.id} value={v.color}>{formatVariante(v.color)}</option>
-                        ))}
+                        {coloresCompat.map((v) => {
+                          const stockV = v.stock ?? Infinity
+                          const yaUsadas = vecesSeleccionada(v.id, idx)
+                          const sinStock = yaUsadas >= stockV
+                          return (
+                            <option key={v.id} value={v.color} disabled={sinStock}>
+                              {formatVariante(v.color)}{sinStock ? ' (sin stock)' : ''}
+                            </option>
+                          )
+                        })}
                       </select>
                     )}
                   </div>

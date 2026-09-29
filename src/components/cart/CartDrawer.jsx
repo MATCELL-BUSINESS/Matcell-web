@@ -87,8 +87,7 @@ export default function CartDrawer() {
     navigate('/checkout')
   }
 
-  const costoEnvioEstimado = envio?.costo ?? 0
-  const total = subtotal + (subtotal >= (envio?.gratis_desde_monto ?? Infinity) ? 0 : costoEnvioEstimado)
+  const total = subtotal
 
   return (
     <>
@@ -263,12 +262,8 @@ export default function CartDrawer() {
               <span>{formatCOP(subtotal)}</span>
             </div>
             <div className="cart-summary-row">
-              <span>Envío estimado</span>
-              <span>
-                {subtotal >= (envio?.gratis_desde_monto ?? Infinity)
-                  ? 'Gratis'
-                  : formatCOP(costoEnvioEstimado)}
-              </span>
+              <span>Envío</span>
+              <span className="cart-envio-pendiente">se calcula al ingresar tu ciudad</span>
             </div>
             <div className="cart-summary-row total">
               <span>Total</span>
