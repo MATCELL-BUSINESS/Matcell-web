@@ -483,17 +483,15 @@ export default function ProductoDetalle() {
                 })
               }
 
-              // Cuántas veces está seleccionada una variante en TODAS las unidades del bundle
-              // (unidad base + todas las unidades extra, excepto la que estamos evaluando)
-              const vecesSeleccionada = (varianteId, exceptoIdx) => {
+              // Cuántas veces aparece una variante en las unidades ANTERIORES al índice idx
+              // (unidad base + extras 0..idx-1). Así la primera ocurrencia siempre es válida
+              // y solo las extras posteriores se marcan sin stock.
+              const vecesAntes = (varianteId, idx) => {
                 let count = 0
-                // unidad base
                 if (varianteActiva?.id === varianteId) count++
-                // unidades extra
-                bundleExtraUnidades.forEach((_, i) => {
-                  if (i === exceptoIdx) return
+                for (let i = 0; i < idx; i++) {
                   if (getVarianteExtra(i)?.id === varianteId) count++
-                })
+                }
                 return count
               }
 
@@ -535,7 +533,7 @@ export default function ProductoDetalle() {
                         {!color && <option value="" disabled>Selecciona un color</option>}
                         {coloresCompat.map((v) => {
                           const stockV = v.stock ?? Infinity
-                          const yaUsadas = vecesSeleccionada(v.id, idx)
+                          const yaUsadas = vecesAntes(v.id, idx)
                           const sinStock = yaUsadas >= stockV
                           return (
                             <option key={v.id} value={v.color} disabled={sinStock}>
