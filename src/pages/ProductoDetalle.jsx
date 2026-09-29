@@ -549,8 +549,34 @@ export default function ProductoDetalle() {
                 )
               }
 
+              // Valida stock de todas las variantes en el bundle de n unidades
+              // Retorna null si todo ok, o string con mensaje de error
+              const validarStockBundle = (n) => {
+                const conteo = new Map() // varianteId -> count
+                const inc = (v) => conteo.set(v.id, (conteo.get(v.id) ?? 0) + 1)
+                if (varianteActiva) inc(varianteActiva)
+                for (let i = 0; i < n - 1; i++) inc(getVarianteExtra(i) ?? varianteActiva)
+                for (const [vid, qty] of conteo.entries()) {
+                  const v = variantes.find((vv) => vv.id === vid)
+                  if (!v) continue
+                  const stockV = v.stock ?? Infinity
+                  if (qty > stockV) {
+                    const nombre = [v.modelo_compatible, v.color].filter(Boolean).map(formatVariante).join(' ')
+                    return `No hay suficiente stock de ${nombre}. Solo ${stockV === 1 ? 'queda 1 unidad disponible' : `quedan ${stockV} unidades disponibles`}.`
+                  }
+                }
+                return null
+              }
+
+              // ¿Alguna variante del bundle actual supera su stock?
+              const bundleStockError2 = bundleOpcion === 2 ? validarStockBundle(2) : null
+              const bundleStockError3 = bundleOpcion === 3 ? validarStockBundle(3) : null
+              const bundleStockErrorPlus = bundleOpcion === 4 ? validarStockBundle(bundleCantidadPlus) : null
+
               // Agrupa unidades por variante y agrega al carrito
               const agregarConExtras = (n, precioUnitario, desc) => {
+                const err = validarStockBundle(n)
+                if (err) { alert(err); return }
                 const grupos = new Map()
                 const baseKey = varianteActiva?.id ?? 'base'
                 grupos.set(baseKey, { item: itemParaCarrito, count: 1 })
@@ -632,9 +658,11 @@ export default function ProductoDetalle() {
                             {!mismaX2 && subcategoriaBundle && bX2.ahorro > 0 && (
                               <p className="bundle-mixto-nota">Descuento por llevar 2 accesorios de la misma subcategoría</p>
                             )}
+                            {bundleStockError2 && <p className="bundle-stock-error">{bundleStockError2}</p>}
                             <button
                               type="button"
                               className="bundle-cta-btn"
+                              disabled={!!bundleStockError2}
                               onClick={(e) => { e.stopPropagation(); agregarConExtras(2, bX2.precioUnitario, `Bundle x2${!mismaX2 ? ' mixto' : ''} – Ahorras ${formatCOP(bX2.ahorro)}`) }}
                             >
                               Agregar 2 al carrito →
@@ -675,9 +703,11 @@ export default function ProductoDetalle() {
                             {!mismaX3 && subcategoriaBundle && bX3.ahorro > 0 && (
                               <p className="bundle-mixto-nota">Descuento por llevar 3 accesorios de la misma subcategoría</p>
                             )}
+                            {bundleStockError3 && <p className="bundle-stock-error">{bundleStockError3}</p>}
                             <button
                               type="button"
                               className="bundle-cta-btn"
+                              disabled={!!bundleStockError3}
                               onClick={(e) => { e.stopPropagation(); agregarConExtras(3, bX3.precioUnitario, `Bundle x3${!mismaX3 ? ' mixto' : ''} – Ahorras ${formatCOP(bX3.ahorro)}`) }}
                             >
                               Agregar 3 al carrito →
@@ -714,9 +744,11 @@ export default function ProductoDetalle() {
                         {bundleOpcion === 4 && variantes.length > 1 && (
                           Array.from({ length: bundleCantidadPlus - 1 }, (_, i) => renderSelectorUnidad(i))
                         )}
+                        {bundleStockErrorPlus && <p className="bundle-stock-error">{bundleStockErrorPlus}</p>}
                         <button
                           type="button"
                           className="bundle-cta-btn"
+                          disabled={bundleOpcion === 4 && !!bundleStockErrorPlus}
                           onClick={(e) => {
                             e.stopPropagation()
                             if (bundleOpcion !== 4) {

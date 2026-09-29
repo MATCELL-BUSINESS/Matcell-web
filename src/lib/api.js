@@ -394,6 +394,32 @@ export async function crearPedido({
   recargoContraentrega = 0,
   estadoPago = 'pendiente',
 }) {
+  // Verificar stock de variantes antes de crear el pedido
+  const varianteIds = [...new Set(items.map((i) => i.varianteId).filter(Boolean))]
+  if (varianteIds.length > 0) {
+    const { data: variantes } = await supabase
+      .from('producto_variantes')
+      .select('id, color, modelo_compatible, stock')
+      .in('id', varianteIds)
+
+    if (variantes) {
+      for (const item of items) {
+        if (!item.varianteId) continue
+        const v = variantes.find((vv) => vv.id === item.varianteId)
+        if (!v) continue
+        const stockV = v.stock ?? Infinity
+        if (item.cantidad > stockV) {
+          const nombre = [v.modelo_compatible, v.color].filter(Boolean).join(' ')
+          const err = new Error(
+            `Stock insuficiente para ${nombre || 'una variante'}. Solo ${stockV === 1 ? 'queda 1 unidad' : `quedan ${stockV} unidades`} disponibles.`
+          )
+          err.stockInsuficiente = true
+          throw err
+        }
+      }
+    }
+  }
+
   // El rol público solo tiene permiso de INSERT (nunca SELECT) sobre pedidos,
   // así que no podemos usar .select() después del insert para recuperar el id
   // generado por la base — lo generamos aquí mismo y lo insertamos explícito.

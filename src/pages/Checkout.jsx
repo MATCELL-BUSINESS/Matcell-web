@@ -265,7 +265,7 @@ export default function Checkout() {
       })
     } catch (err) {
       console.error(err)
-      setError('No pudimos confirmar tu pedido. Intenta de nuevo en unos segundos.')
+      setError(err.stockInsuficiente ? err.message : 'No pudimos confirmar tu pedido. Intenta de nuevo en unos segundos.')
     } finally {
       setEnviando(false)
     }
@@ -289,7 +289,7 @@ export default function Checkout() {
       })
     } catch (err) {
       console.error(err)
-      setError('No pudimos crear tu pedido. Intenta de nuevo en unos segundos.')
+      setError(err.stockInsuficiente ? err.message : 'No pudimos crear tu pedido. Intenta de nuevo en unos segundos.')
       setEnviando(false)
       return
     }

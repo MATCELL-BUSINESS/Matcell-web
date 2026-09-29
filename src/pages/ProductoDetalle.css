@@ -789,8 +789,20 @@
   font-family: var(--font-principal);
 }
 
-.bundle-cta-btn:hover {
+.bundle-cta-btn:hover:not(:disabled) {
   background: #d42600;
+}
+
+.bundle-cta-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bundle-stock-error {
+  font-size: 12.5px;
+  color: #d42600;
+  font-weight: 600;
+  margin: 4px 0 2px;
 }
 
 /* Miniatura dentro del chip de variante */
