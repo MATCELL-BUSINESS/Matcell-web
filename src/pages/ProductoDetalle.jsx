@@ -126,18 +126,37 @@ export default function ProductoDetalle() {
     : []
   const tieneCapacidades = capacidades.length > 1
 
+  // Para accesorios: un elemento por color único (stock = true si al menos una variante tiene stock)
+  const coloresParaAccesorio = (() => {
+    const seen = new Map()
+    for (const v of variantes) {
+      if (!v.color) continue
+      if (!seen.has(v.color)) {
+        seen.set(v.color, { ...v, hasStock: (v.stock ?? 0) > 0 })
+      } else if ((v.stock ?? 0) > 0) {
+        seen.get(v.color).hasStock = true
+      }
+    }
+    return [...seen.values()]
+  })()
+
+  // Compatibilidades del color actualmente seleccionado (para chips secundarios)
+  const compatsDelColorSeleccionado = esAccesorio && colorSeleccionado
+    ? [...new Set(variantes.filter((v) => v.color === colorSeleccionado).map((v) => v.modelo_compatible).filter(Boolean))]
+    : []
+
   const coloresDisponibles = esAccesorio
-    ? (compatibilidadSeleccionada
-        ? variantes.filter((v) => v.modelo_compatible === compatibilidadSeleccionada)
-        : variantes)
+    ? coloresParaAccesorio
     : (tieneCapacidades
         ? variantes.filter((v) => v.almacenamiento === capacidadSeleccionada)
         : variantes)
 
   const varianteActiva = variantes.find((v) => {
     if (esAccesorio) {
-      return (!compatibilidadSeleccionada || v.modelo_compatible === compatibilidadSeleccionada)
-        && v.color === colorSeleccionado
+      if (!colorSeleccionado) return false
+      if (compatsDelColorSeleccionado.length > 1 && !compatibilidadSeleccionada) return false
+      return v.color === colorSeleccionado
+        && (compatsDelColorSeleccionado.length <= 1 || v.modelo_compatible === compatibilidadSeleccionada)
     }
     return (!tieneCapacidades || v.almacenamiento === capacidadSeleccionada)
       && v.color === colorSeleccionado
@@ -150,12 +169,12 @@ export default function ProductoDetalle() {
   // Requiere que el cliente seleccione una variante antes de agregar al carrito
   const debeSeleccionar = variantes.length > 0 && !varianteActiva
 
-  const fotosColor = (producto.fotos ?? []).filter((f) => f.color === colorSeleccionado)
   const fotosGeneral = (producto.fotos ?? []).filter((f) => !f.color)
-  const fotosGaleria =
-    fotosColor.length > 0 ? fotosColor :
-    fotosGeneral.length > 0 ? fotosGeneral :
-    (producto.fotos ?? [])
+  const fotosColor = (producto.fotos ?? []).filter((f) => f.color === colorSeleccionado)
+  // Generales siempre visibles; las del color seleccionado se suman (no reemplazan)
+  const fotosGaleria = colorSeleccionado
+    ? [...fotosGeneral, ...fotosColor]
+    : fotosGeneral.length > 0 ? fotosGeneral : (producto.fotos ?? [])
 
   const specsDisponibles = SPECS_LABELS.filter(
     ([key]) => producto[key] && !(key === 'almacenamiento' && (tieneCapacidades || esAccesorio))
@@ -194,8 +213,14 @@ export default function ProductoDetalle() {
 
   const handleSeleccionarCompatibilidad = (compat) => {
     setCompatibilidadSeleccionada(compat)
-    const colores = variantes.filter((v) => v.modelo_compatible === compat)
-    setColorSeleccionado(colores[0]?.color ?? null)
+  }
+
+  const handleSeleccionarColorAccesorio = (color) => {
+    setColorSeleccionado(color)
+    const compats = [...new Set(
+      variantes.filter((v) => v.color === color).map((v) => v.modelo_compatible).filter(Boolean)
+    )]
+    setCompatibilidadSeleccionada(compats.length === 1 ? compats[0] : null)
   }
 
   const varianteLabel = esAccesorio
@@ -331,23 +356,6 @@ export default function ProductoDetalle() {
             </p>
           )}
 
-          {esAccesorio && tieneCompatibilidades && (
-            <div className="producto-variantes">
-              <p className="variantes-label">Compatible con</p>
-              <div className="variantes-options">
-                {compatibilidades.map((compat) => (
-                  <button
-                    key={compat}
-                    className={`variante-chip ${compat === compatibilidadSeleccionada ? 'active' : ''}`}
-                    onClick={() => handleSeleccionarCompatibilidad(compat)}
-                  >
-                    {compat}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {!esAccesorio && tieneCapacidades && (
             <div className="producto-variantes">
               <p className="variantes-label">Capacidad</p>
@@ -371,27 +379,45 @@ export default function ProductoDetalle() {
             <div className="producto-variantes">
               <p className="variantes-label">
                 Color
-                {varianteActiva?.color && <span> · {varianteActiva.color}</span>}
-                {varianteActiva?.modelo_compatible && (
-                  <span> · {varianteActiva.modelo_compatible}</span>
-                )}
+                {colorSeleccionado && <span> · {colorSeleccionado}</span>}
               </p>
               <div className="variantes-options-color">
                 {coloresDisponibles.map((variante) => (
                   <button
-                    key={variante.id}
+                    key={variante.color}
                     className={`color-swatch ${
                       variante.color === colorSeleccionado ? 'active' : ''
-                    } ${variante.stock === 0 ? 'sin-stock' : ''}`}
+                    } ${(esAccesorio ? !variante.hasStock : variante.stock === 0) ? 'sin-stock' : ''}`}
                     style={{ backgroundColor: variante.color_hex || '#ccc' }}
-                    onClick={() => setColorSeleccionado(variante.color)}
+                    onClick={() =>
+                      esAccesorio
+                        ? handleSeleccionarColorAccesorio(variante.color)
+                        : setColorSeleccionado(variante.color)
+                    }
                     aria-label={
-                      variante.stock === 0
+                      (esAccesorio ? !variante.hasStock : variante.stock === 0)
                         ? `${variante.color} (agotado)`
                         : variante.color
                     }
                     title={variante.color}
                   />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {esAccesorio && compatsDelColorSeleccionado.length > 1 && (
+            <div className="producto-variantes">
+              <p className="variantes-label">Compatible con</p>
+              <div className="variantes-options">
+                {compatsDelColorSeleccionado.map((compat) => (
+                  <button
+                    key={compat}
+                    className={`variante-chip ${compat === compatibilidadSeleccionada ? 'active' : ''}`}
+                    onClick={() => handleSeleccionarCompatibilidad(compat)}
+                  >
+                    {compat}
+                  </button>
                 ))}
               </div>
             </div>
