@@ -109,6 +109,19 @@
   gap: 20px;
 }
 
+.search-box-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-box-icon:hover { color: var(--color-negro); }
+
 .search-box {
   display: flex;
   align-items: center;

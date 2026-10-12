@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { FiFilter } from 'react-icons/fi'
+import { FiFilter, FiSearch, FiX } from 'react-icons/fi'
+import { FaWhatsapp } from 'react-icons/fa'
 import {
   getCategoriaBySlug,
   getSubcategorias,
@@ -31,12 +32,16 @@ export default function Catalogo() {
     precioMax: null,
   })
   const [filtrosMobileOpen, setFiltrosMobileOpen] = useState(false)
+  const [busquedaCompat, setBusquedaCompat] = useState('')
+  const compatInputRef = useRef(null)
 
   const esOfertas = slug === 'ofertas'
+  const esAccesorios = slug === 'accesorios'
 
   useEffect(() => {
     setFiltros({ estado: null, subcategoriaId: null, precioMin: null, precioMax: null })
     setOrden('relevancia')
+    setBusquedaCompat('')
 
     if (esOfertas) {
       setCategoria(null)
@@ -78,6 +83,18 @@ export default function Catalogo() {
       .catch(console.error)
       .finally(() => setCargandoProductos(false))
   }, [categoriaCargada, categoria, esOfertas, slug, filtros, orden])
+
+  // Filtro de compatibilidad en cliente (solo accesorios)
+  const terminoCompat = busquedaCompat.trim().toLowerCase()
+  const productosFiltrados = esAccesorios && terminoCompat.length >= 2
+    ? productos.filter((p) =>
+        (p.producto_variantes ?? []).some(
+          (v) => v.stock > 0 && v.modelo_compatible?.toLowerCase().includes(terminoCompat)
+        )
+      )
+    : productos
+
+  const whatsappCompatHref = `https://wa.me/573046789119?text=${encodeURIComponent(`Hola, busco accesorios compatibles con: ${busquedaCompat.trim()}`)}`
 
   const nombreCategoria =
     NOMBRES_ESPECIALES[slug] ?? categoria?.nombre ?? (categoriaCargada ? 'Categoría no encontrada' : '')
@@ -126,11 +143,44 @@ export default function Catalogo() {
         )}
 
         <div className="catalogo-content">
+          {esAccesorios && (
+            <div className="compat-search-wrap">
+              <div className="compat-search-field">
+                <FiSearch size={16} className="compat-search-icon" />
+                <input
+                  ref={compatInputRef}
+                  type="text"
+                  className="compat-search-input"
+                  placeholder="¿Para qué modelo? Ej: iPhone 13 Pro Max"
+                  value={busquedaCompat}
+                  onChange={(e) => setBusquedaCompat(e.target.value)}
+                />
+                {busquedaCompat && (
+                  <button
+                    className="compat-search-clear"
+                    onClick={() => { setBusquedaCompat(''); compatInputRef.current?.focus() }}
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <FiX size={15} />
+                  </button>
+                )}
+              </div>
+              {terminoCompat.length >= 2 && (
+                <div className="compat-chip">
+                  <span>Filtrando por: {busquedaCompat.trim()}</span>
+                  <button onClick={() => setBusquedaCompat('')} aria-label="Quitar filtro">
+                    <FiX size={13} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="catalogo-toolbar">
             <p className="results-count">
               {cargandoProductos
                 ? 'Cargando productos...'
-                : `${productos.length} producto${productos.length === 1 ? '' : 's'}`}
+                : `${productosFiltrados.length} producto${productosFiltrados.length === 1 ? '' : 's'}`}
             </p>
 
             <select
@@ -144,13 +194,22 @@ export default function Catalogo() {
             </select>
           </div>
 
-          {!cargandoProductos && productos.length === 0 ? (
-            <p className="no-resultados">
-              No encontramos productos con estos filtros.
-            </p>
+          {!cargandoProductos && productosFiltrados.length === 0 ? (
+            esAccesorios && terminoCompat.length >= 2 ? (
+              <div className="no-resultados-compat">
+                <p>No encontramos accesorios disponibles para ese modelo.</p>
+                <p className="no-resultados-compat-sub">Escríbenos por WhatsApp y te ayudamos.</p>
+                <a href={whatsappCompatHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary no-resultados-compat-btn">
+                  <FaWhatsapp size={18} />
+                  Escribir por WhatsApp
+                </a>
+              </div>
+            ) : (
+              <p className="no-resultados">No encontramos productos con estos filtros.</p>
+            )
           ) : (
             <div className="catalogo-grid">
-              {productos.map((producto) => (
+              {productosFiltrados.map((producto) => (
                 <ProductCard key={producto.id} producto={producto} />
               ))}
             </div>

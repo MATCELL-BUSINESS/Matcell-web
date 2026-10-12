@@ -16,6 +16,7 @@ import MisPedidos from './pages/MisPedidos'
 import MiListaDeseos from './pages/MiListaDeseos'
 import Politicas from './pages/Politicas'
 import Mayoristas from './pages/Mayoristas'
+import Buscar from './pages/Buscar'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/mi-lista-deseos" element={<MiListaDeseos />} />
                 <Route path="/politicas" element={<Politicas />} />
                 <Route path="/mayoristas" element={<Mayoristas />} />
+                <Route path="/buscar" element={<Buscar />} />
               </Route>
             </Routes>
           </CartProvider>

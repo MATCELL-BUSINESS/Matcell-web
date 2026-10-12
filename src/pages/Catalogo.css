@@ -76,6 +76,109 @@
   gap: 20px;
 }
 
+/* ── Filtro compatibilidad accesorios ── */
+.compat-search-wrap {
+  margin-bottom: 16px;
+}
+
+.compat-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.compat-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #aaa;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.compat-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-family: var(--font-principal);
+  color: var(--color-negro);
+  background: var(--color-blanco);
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.compat-search-input:focus {
+  outline: none;
+  border-color: var(--color-naranja);
+}
+
+.compat-search-clear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+}
+
+.compat-search-clear:hover {
+  color: var(--color-negro);
+}
+
+.compat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  background: #fff0eb;
+  border: 1px solid #ffd5cc;
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-negro);
+}
+
+.compat-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.compat-chip button:hover { color: var(--color-negro); }
+
+/* ── Sin resultados compatibilidad ── */
+.no-resultados-compat {
+  text-align: center;
+  padding: 48px 20px;
+}
+
+.no-resultados-compat p {
+  font-size: 14px;
+  color: var(--color-negro);
+  margin: 0 0 4px;
+}
+
+.no-resultados-compat-sub {
+  color: #888 !important;
+  margin-bottom: 20px !important;
+}
+
+.no-resultados-compat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .no-resultados {
   text-align: center;
   color: #888;

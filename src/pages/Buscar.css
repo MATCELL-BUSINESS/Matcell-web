@@ -1,0 +1,47 @@
+.buscar-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+}
+
+.buscar-titulo {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 20px;
+  color: var(--color-negro);
+}
+
+.buscar-titulo span {
+  color: var(--color-naranja);
+}
+
+.buscar-count {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 16px;
+}
+
+.buscar-estado {
+  font-size: 14px;
+  color: #888;
+  padding: 40px 0;
+}
+
+.buscar-vacio {
+  color: var(--color-negro);
+}
+
+.buscar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1000px) {
+  .buscar-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .buscar-page { padding: 20px 20px 48px; }
+  .buscar-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}

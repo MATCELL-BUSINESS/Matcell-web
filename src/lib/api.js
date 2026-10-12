@@ -120,7 +120,7 @@ export async function getProductosCatalogo({
       `id, nombre, precio, precio_anterior, en_oferta, estado, stock,
        categoria_id, subcategoria_id, destacado, creado_en,
        producto_fotos ( url, orden ),
-       producto_variantes ( precio )`
+       producto_variantes ( precio, modelo_compatible, stock )`
     )
     .eq('activo', true)
 
@@ -154,6 +154,43 @@ export async function getProductosCatalogo({
       [...(producto.producto_fotos ?? [])].sort((a, b) => a.orden - b.orden)[0]
         ?.url ?? null,
   }))
+}
+
+const CAMPOS_CATALOGO = `id, nombre, precio, precio_anterior, en_oferta, estado, stock,
+       categoria_id, subcategoria_id, destacado, creado_en,
+       producto_fotos ( url, orden ),
+       producto_variantes ( precio, modelo_compatible, stock )`
+
+const mapProducto = (p) => ({
+  ...conPrecioDesde(p),
+  foto_portada: [...(p.producto_fotos ?? [])].sort((a, b) => a.orden - b.orden)[0]?.url ?? null,
+  producto_variantes: p.producto_variantes ?? [],
+})
+
+export async function buscarProductos(q) {
+  if (!q || q.trim().length < 2) return []
+  const termino = q.trim()
+
+  // IDs de productos con variante compatible que tiene stock
+  const { data: variantesMatch } = await supabase
+    .from('producto_variantes')
+    .select('producto_id')
+    .ilike('modelo_compatible', `%${termino}%`)
+    .gt('stock', 0)
+
+  const idsPorCompat = [...new Set((variantesMatch ?? []).map((v) => v.producto_id))]
+
+  const [{ data: porNombre }, { data: porCompat }] = await Promise.all([
+    supabase.from('productos').select(CAMPOS_CATALOGO).eq('activo', true).ilike('nombre', `%${termino}%`),
+    idsPorCompat.length > 0
+      ? supabase.from('productos').select(CAMPOS_CATALOGO).eq('activo', true).in('id', idsPorCompat)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const vistos = new Set()
+  return [...(porNombre ?? []), ...(porCompat ?? [])]
+    .filter((p) => { if (vistos.has(p.id)) return false; vistos.add(p.id); return true })
+    .map(mapProducto)
 }
 
 export async function getProductoById(id) {

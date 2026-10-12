@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { FiSearch, FiShoppingCart, FiMenu, FiX } from 'react-icons/fi'
 import { getEnvioNacional } from '../../lib/api'
 import { formatCOP } from '../../lib/format'
@@ -20,8 +20,20 @@ const NAV_LINKS = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [envioGratisDesde, setEnvioGratisDesde] = useState(null)
+  const [busqueda, setBusqueda] = useState('')
   const { cantidadTotal, openDrawer } = useCart()
   const { mensaje_barra_superior } = useTiendaConfig()
+  const navigate = useNavigate()
+  const searchRef = useRef(null)
+
+  const handleBuscar = (e) => {
+    e.preventDefault()
+    const q = busqueda.trim()
+    if (q.length < 2) return
+    navigate(`/buscar?q=${encodeURIComponent(q)}`)
+    setBusqueda('')
+    searchRef.current?.blur()
+  }
 
   useEffect(() => {
     getEnvioNacional()
@@ -87,10 +99,19 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          <div className="search-box">
-            <FiSearch size={18} />
-            <input type="text" placeholder="Buscar productos..." />
-          </div>
+          <form className="search-box" onSubmit={handleBuscar} role="search">
+            <button type="submit" className="search-box-icon" aria-label="Buscar">
+              <FiSearch size={18} />
+            </button>
+            <input
+              ref={searchRef}
+              type="search"
+              placeholder="Buscar productos o modelos..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              aria-label="Buscar"
+            />
+          </form>
 
           <UserMenu />
 
