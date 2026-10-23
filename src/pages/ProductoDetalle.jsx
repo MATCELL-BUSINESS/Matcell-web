@@ -140,10 +140,19 @@ export default function ProductoDetalle() {
     return [...seen.values()]
   })()
 
-  // Compatibilidades del color actualmente seleccionado (para chips secundarios)
-  const compatsDelColorSeleccionado = esAccesorio && colorSeleccionado
-    ? [...new Set(variantes.filter((v) => v.color === colorSeleccionado).map((v) => v.modelo_compatible).filter(Boolean))]
-    : []
+  // Compatibilidades del color actualmente seleccionado (para chips secundarios), ordenadas numéricamente
+  const compatsDelColorSeleccionado = (() => {
+    if (!esAccesorio || !colorSeleccionado) return []
+    const raw = [...new Set(
+      variantes.filter((v) => v.color === colorSeleccionado).map((v) => v.modelo_compatible).filter(Boolean)
+    )]
+    return raw.sort((a, b) => {
+      const nA = parseInt(a.match(/iPhone\s+(\d+)/)?.[1] ?? '0')
+      const nB = parseInt(b.match(/iPhone\s+(\d+)/)?.[1] ?? '0')
+      if (nA !== nB) return nA - nB
+      return a.localeCompare(b)
+    })
+  })()
 
   const coloresDisponibles = esAccesorio
     ? coloresParaAccesorio
