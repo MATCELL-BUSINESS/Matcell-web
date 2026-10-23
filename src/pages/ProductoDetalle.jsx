@@ -415,7 +415,7 @@ export default function ProductoDetalle() {
             </div>
           )}
 
-          {esAccesorio && compatsDelColorSeleccionado.length > 1 && (
+          {esAccesorio && compatsDelColorSeleccionado.length > 0 && (
             <div className="producto-variantes">
               <p className="variantes-label">Compatible con</p>
               <div className="variantes-options">
