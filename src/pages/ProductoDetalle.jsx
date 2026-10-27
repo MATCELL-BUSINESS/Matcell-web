@@ -179,11 +179,17 @@ export default function ProductoDetalle() {
   const debeSeleccionar = variantes.length > 0 && !varianteActiva
 
   const fotosGeneral = (producto.fotos ?? []).filter((f) => !f.color)
-  const fotosColor = (producto.fotos ?? []).filter((f) => f.color === colorSeleccionado)
-  // Generales siempre visibles; las del color seleccionado se suman (no reemplazan)
-  const fotosGaleria = colorSeleccionado
-    ? [...fotosGeneral, ...fotosColor]
-    : fotosGeneral.length > 0 ? fotosGeneral : (producto.fotos ?? [])
+  // Todas las fotos siempre visibles: generales primero, luego fotos de cada color en orden
+  const todosLosColoresOrdenados = [...new Set((producto.fotos ?? []).map((f) => f.color).filter(Boolean))]
+  const fotosGaleria = [
+    ...fotosGeneral,
+    ...todosLosColoresOrdenados.flatMap((c) => (producto.fotos ?? []).filter((f) => f.color === c)),
+  ]
+
+  // Índice de la primera foto del color seleccionado (para scroll automático)
+  const indiceColorSeleccionado = colorSeleccionado
+    ? fotosGaleria.findIndex((f) => f.color === colorSeleccionado)
+    : -1
 
   const specsDisponibles = SPECS_LABELS.filter(
     ([key]) => producto[key] && !(key === 'almacenamiento' && (tieneCapacidades || esAccesorio))
@@ -299,9 +305,9 @@ export default function ProductoDetalle() {
 
       <div className="producto-detalle-body">
         <ProductGallery
-          key={colorSeleccionado}
           fotos={fotosGaleria}
           nombre={producto.nombre}
+          irAIndice={indiceColorSeleccionado}
         />
 
         <div className="producto-info">
